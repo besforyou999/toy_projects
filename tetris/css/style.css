@@ -25,10 +25,20 @@ body {
 .playground > ul {
   border: 1px solid #333;
   width: 250px;
-  margin: 0 auto;
+  margin-left: calc((100% / 2) - 125px);
+}
+
+.nextBlockBox {
+  margin-top: 100px;
+  margin-left: 50px;
 }
 
 .playground > ul > li {
+  width: 100%;
+  height: 25px;
+}
+
+.nextBlockBox > ul > li {
   width: 100%;
   height: 25px;
 }
@@ -37,8 +47,18 @@ body {
   display: flex;
 }
 
+.nextBlockBox > ul > li > ul {
+  display: flex;
+}
+
 .playground > ul > li > ul > li {
   width: 25px;
   height: 25px;
   outline: 1px solid #ccc
+}
+
+.nextBlockBox > ul > li > ul > li {
+  width: 25px;
+  height: 25px;
+  outline: 1px solid #ccc;
 }
