@@ -4,6 +4,14 @@ const UNSEENAREA_SIDE = 3;
 const UNSEENAREA_TOP = 4;
 const UNSEENAREA_BOTTOM = 3;
 
+const create2DArray = (rows, columns) => {
+	let arr = new Array(rows);
+	for (let i = 0 ; i < rows ; i++) {
+		arr[i] = new Array(columns);
+	}
+	return arr;
+}
+
 const initialize_matrix = () => {
 	let block_occupied = new Array(HEIGHT);
 	for (let i = 0 ; i < HEIGHT ; i++) {
@@ -13,10 +21,19 @@ const initialize_matrix = () => {
 		}
 		block_occupied[i] = temp;
 	}
+	return block_occupied;
+}
+
+class Block {
+	constructor() {
+		this.blockDir = 0;
+		this.block;
+		this.coloredBlock;
+	}
 }
 
 class IBlock {
-	block = Array.from(Array(4), () => new Array(4));
+	block = create2DArray(4, 4);
 	coloredBlock = new Array(4);
 	blockDir = 0;
 	constructor(startCol) {
@@ -112,12 +129,15 @@ class IBlock {
 }
 
 class OBlock {
-	block = Array.from(Array(2), () => new Array(2));
+	block = create2DArray(2, 2);
+	coloredBlock = new Array(4);
+	blockDir = 0;
+	startingRow = 2;
 	constructor(startCol) {
-		this.block[0][0] = [0, startCol];
-		this.block[0][1] = [0, startCol + 1];
-		this.block[1][0] = [1, startCol];
-		this.block[1][1] = [1, startCol + 1];
+		this.block[0][0] = this.coloredBlock[0] = [this.startingRow, startCol];
+		this.block[0][1] = this.coloredBlock[1] = [this.startingRow, startCol + 1];
+		this.block[1][0] = this.coloredBlock[2] = [this.startingRow + 1, startCol];
+		this.block[1][1] = this.coloredBlock[3] = [this.startingRow + 1, startCol + 1];
 	}
 
 	spinDir() {
@@ -131,6 +151,10 @@ class OBlock {
 		this.block[0][1][1] -= 1;
 		this.block[1][0][1] -= 1;
 		this.block[1][1][1] -= 1;
+		this.coloredBlock[0] = this.block[0][0];
+		this.coloredBlock[1] = this.block[0][1];
+		this.coloredBlock[2] = this.block[1][0];
+		this.coloredBlock[3] = this.block[1][1];
 	}
 	
 	moveRight() {
@@ -139,6 +163,10 @@ class OBlock {
 		this.block[0][1][1] += 1;
 		this.block[1][0][1] += 1;
 		this.block[1][1][1] += 1;
+		this.coloredBlock[0] = this.block[0][0];
+		this.coloredBlock[1] = this.block[0][1];
+		this.coloredBlock[2] = this.block[1][0];
+		this.coloredBlock[3] = this.block[1][1];
 	}
 
 	moveDown() {
@@ -147,47 +175,51 @@ class OBlock {
 		this.block[0][1][0] += 1;
 		this.block[1][0][0] += 1;
 		this.block[1][1][0] += 1;
+		this.coloredBlock[0] = this.block[0][0];
+		this.coloredBlock[1] = this.block[0][1];
+		this.coloredBlock[2] = this.block[1][0];
+		this.coloredBlock[3] = this.block[1][1];
 	}
 }
 
 class ZBlock {
-	block = Array.from(Array(3), () => new Array(3));
+	block = create2DArray(3, 3);
 	coloredBlock = new Array(4);
 	blockDir = 0;
 	constructor(startCol) {
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0] = [i, startCol - 1];
-			this.block[i][1] = [i, startCol];
-			this.block[i][2] = [i, startCol + 1];
+		for (let i = 1 ; i <= 3 ; i++) {
+			this.block[i - 1][0] = [i, startCol - 1];
+			this.block[i - 1][1] = [i, startCol];
+			this.block[i - 1][2] = [i, startCol + 1];
 		}
-		this.coloredBlock[0] = [0, startCol - 1];
-		this.coloredBlock[1] = [0, startCol];
-		this.coloredBlock[2] = [1, startCol];
-		this.coloredBlock[3] = [1, startCol + 1];
+		this.coloredBlock[0] = [2, startCol - 1];
+		this.coloredBlock[1] = [2, startCol];
+		this.coloredBlock[2] = [3, startCol];
+		this.coloredBlock[3] = [3, startCol + 1];
 	}
 	
 	spinDir() {
 		blockDir = blockDir + 1 > 3 ? 0 : blockDir + 1;
 		switch(blockDir) {
 			case 0: {
-				this.coloredBlock[0] = this.block[0][0];
-				this.coloredBlock[1] = this.block[0][1];
-				this.coloredBlock[2] = this.block[1][1];
-				this.coloredBlock[3] = this.block[1][2];
-				break;
-			}
-			case 1: {
-				this.coloredBlock[0] = this.block[0][2];
-				this.coloredBlock[1] = this.block[1][1];
-				this.coloredBlock[2] = this.block[1][2];
-				this.coloredBlock[3] = this.block[2][1];
-				break;
-			} 
-			case 2: {
 				this.coloredBlock[0] = this.block[1][0];
 				this.coloredBlock[1] = this.block[1][1];
 				this.coloredBlock[2] = this.block[2][1];
 				this.coloredBlock[3] = this.block[2][2];
+				break;
+			}
+			case 1: {
+				this.coloredBlock[0] = this.block[0][1];
+				this.coloredBlock[1] = this.block[1][1];
+				this.coloredBlock[2] = this.block[1][0];
+				this.coloredBlock[3] = this.block[2][0];
+				break;
+			} 
+			case 2: {
+				this.coloredBlock[0] = this.block[0][0];
+				this.coloredBlock[1] = this.block[0][1];
+				this.coloredBlock[2] = this.block[1][1];
+				this.coloredBlock[3] = this.block[1][2];
 				break;
 			} 
 			case 3: {
@@ -244,43 +276,44 @@ class ZBlock {
 }
 
 class SBlock {
-	block = Array.from(Array(3), () => new Array(3));
+	block = create2DArray(3, 3);
 	coloredBlock = new Array(4);
 	blockDir = 0;
+	startingRow = 2;
 	constructor(startCol) {
 		for (let i = 0 ; i < 3 ; i++) {
 			this.block[i][0] = [i, startCol - 1];
 			this.block[i][1] = [i, startCol];
 			this.block[i][2] = [i, startCol + 1];
 		}
-		this.coloredBlock[0] = [0, startCol];
-		this.coloredBlock[1] = [0, startCol + 1];
-		this.coloredBlock[2] = [1, startCol - 1];
-		this.coloredBlock[3] = [1, startCol];
+		this.coloredBlock[0] = [this.startingRow, startCol];
+		this.coloredBlock[1] = [this.startingRow, startCol + 1];
+		this.coloredBlock[2] = [this.startingRow + 1, startCol - 1];
+		this.coloredBlock[3] = [this.startingRow + 1, startCol];
 	}
 	
 	spinDir() {
 		blockDir = blockDir + 1 > 3 ? 0 : blockDir + 1;
 		switch(blockDir) {
 			case 0: {
-				this.coloredBlock[0] = this.block[0][1];
-				this.coloredBlock[1] = this.block[0][2];
-				this.coloredBlock[2] = this.block[1][0];
-				this.coloredBlock[3] = this.block[1][1];
+				this.coloredBlock[0] = this.block[2][0];
+				this.coloredBlock[1] = this.block[2][1];
+				this.coloredBlock[2] = this.block[1][1];
+				this.coloredBlock[3] = this.block[1][2];
 				break;
 			}
 			case 1: {
-				this.coloredBlock[0] = this.block[0][1];
-				this.coloredBlock[1] = this.block[1][1];
-				this.coloredBlock[2] = this.block[1][2];
-				this.coloredBlock[3] = this.block[2][2];
+				this.coloredBlock[0] = this.block[0][0];
+				this.coloredBlock[1] = this.block[1][0];
+				this.coloredBlock[2] = this.block[1][1];
+				this.coloredBlock[3] = this.block[2][1];
 				break;
 			} 
 			case 2: {
-				this.coloredBlock[0] = this.block[1][2];
-				this.coloredBlock[1] = this.block[1][1];
-				this.coloredBlock[2] = this.block[2][1];
-				this.coloredBlock[3] = this.block[2][0];
+				this.coloredBlock[0] = this.block[2][0];
+				this.coloredBlock[1] = this.block[2][1];
+				this.coloredBlock[2] = this.block[1][1];
+				this.coloredBlock[3] = this.block[1][2];
 				break;
 			} 
 			case 3: {
@@ -337,19 +370,20 @@ class SBlock {
 }
 
 class JBlock {
-	block = Array.from(Array(3), () => new Array(3));
+	block = create2DArray(3, 3);
 	coloredBlock = new Array(4);
 	blockDir = 0;
+	startingRow = 1;
 	constructor(startCol) {
 		for (let i = 0 ; i < 3 ; i++) {
 			this.block[i][0] = [i, startCol - 1];
 			this.block[i][1] = [i, startCol];
 			this.block[i][2] = [i, startCol + 1];
 		}
-		this.coloredBlock[0] = [0, startCol];
-		this.coloredBlock[1] = [1, startCol];
-		this.coloredBlock[2] = [2, startCol - 1];
-		this.coloredBlock[3] = [2, startCol];
+		this.coloredBlock[0] = [this.startingRow, startCol];
+		this.coloredBlock[1] = [this.startingRow + 1, startCol];
+		this.coloredBlock[2] = [this.startingRow + 2, startCol - 1];
+		this.coloredBlock[3] = [this.startingRow + 2, startCol];
 	}
 	
 	spinDir() {
@@ -430,19 +464,20 @@ class JBlock {
 }
 
 class LBlock {
-	block = Array.from(Array(3), () => new Array(3));
+	block = create2DArray(3, 3);
 	coloredBlock = new Array(4);
 	blockDir = 0;
+	startingRow = 1;
 	constructor(startCol) {
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0] = [i, startCol - 1];
-			this.block[i][1] = [i, startCol];
-			this.block[i][2] = [i, startCol + 1];
+		for (let i = 1 ; i <= 3 ; i++) {
+			this.block[i - 1][0] = [i, startCol - 1];
+			this.block[i - 1][1] = [i, startCol];
+			this.block[i - 1][2] = [i, startCol + 1];
 		}
-		this.coloredBlock[0] = [0, startCol];
-		this.coloredBlock[1] = [1, startCol];
-		this.coloredBlock[2] = [2, startCol];
-		this.coloredBlock[3] = [2, startCol + 1];
+		this.coloredBlock[0] = [this.startingRow, startCol];
+		this.coloredBlock[1] = [this.startingRow + 1, startCol];
+		this.coloredBlock[2] = [this.startingRow + 2, startCol];
+		this.coloredBlock[3] = [this.startingRow + 2, startCol + 1];
 	}
 	
 	spinDir() {
@@ -523,19 +558,20 @@ class LBlock {
 }
 
 class TBlock {
-	block = Array.from(Array(3), () => new Array(3));
+	block = create2DArray(3, 3);
 	coloredBlock = new Array(4);
 	blockDir = 0;
+	startingRow = 2;
 	constructor(startCol) {
 		for (let i = 0 ; i < 3 ; i++) {
 			this.block[i][0] = [i, startCol - 1];
 			this.block[i][1] = [i, startCol];
 			this.block[i][2] = [i, startCol + 1];
 		}
-		this.coloredBlock[0] = [1, startCol - 1];
-		this.coloredBlock[1] = [1, startCol];
-		this.coloredBlock[2] = [2, startCol];
-		this.coloredBlock[3] = [1, startCol + 1];
+		this.coloredBlock[0] = [this.startingRow, startCol - 1];
+		this.coloredBlock[1] = [this.startingRow, startCol];
+		this.coloredBlock[2] = [this.startingRow + 1, startCol];
+		this.coloredBlock[3] = [this.startingRow, startCol + 1];
 	}
 	
 	spinDir() {
@@ -668,48 +704,22 @@ function dealWithKeyboard(event) {
 
 function buildMatrix_addId() {
 	const playground = document.querySelector(".playground > ul");
-	let id = 0
-	// unseen
-	for (let i = 0 ; i < UNSEENAREA ; i++) {
-		id = 10 * i;
+	for (let i = 0 ; i < HEIGHT + UNSEENAREA_BOTTOM ; i++) {
 		const li = document.createElement("li");
 		const ul = document.createElement("ul");
 		for (let j = 0 ; j < WIDTH ; j++) {
 			const matrix = document.createElement("li");
-			matrix.id = id;
+			matrix.id = `${i}-${j}`;
+			if (j >= UNSEENAREA_SIDE && j < WIDTH - UNSEENAREA_SIDE) {
+				if (i >= UNSEENAREA_TOP && i < HEIGHT - UNSEENAREA_BOTTOM) {
+					matrix.style.outline = "1px solid #ccc";
+				}
+			}
 			ul.append(matrix);
-			id += 1;
 		}
 		li.append(ul);
 		playground.append(li);
 	}
-
-	// seen
-	for (let i = UNSEENAREA ; i < HEIGHT ; i++) {
-		id = 10 * i;
-		const li = document.createElement("li");
-		const ul = document.createElement("ul");
-		for (let j = 0 ; j < WIDTH ; j++) {
-			const matrix = document.createElement("li");
-			matrix.id = id;
-			ul.append(matrix);
-			id += 1;
-		}
-		li.append(ul);
-		playground.append(li);
-	}
-	// 마지막 안보이는 줄
-	id = 10 * HEIGHT;
-	const li = document.createElement("li");
-	const ul = document.createElement("ul");
-	for (let j = 0 ; j < WIDTH ; j++) {
-		const matrix = document.createElement("li");
-		matrix.id = id;
-		ul.append(matrix);
-		id += 1;
-	}
-	li.append(ul);
-	playground.append(li);
 }
 
 function buildNextBlockBox() {
@@ -737,26 +747,27 @@ function buildNextBlockBox() {
 }
 
 function makeRandomNumRange0_6() {
-	return Math.floor(Math.random() * 2);
+	return Math.floor(Math.random() * 7);
 }
 // 0: 막대기, 1: 사각형, 2: z , 3: s, 4: J, 5: L, 6: T
 function selectBlockStartCol() {
 	let col = 0;
 	if (currentBlockType == 0) {
-		col = Math.floor(Math.random() * 10);
+		col = Math.floor(Math.random() * 12);
 	} else if (currentBlockType == 1) {
-		col = Math.floor(Math.random() * 9);
+		col = Math.floor(Math.random() * 11);
 	} else if (currentBlockType == 2) {
-		col = Math.floor((Math.random() * 8) + 1);
+		col = Math.floor(Math.random() * 10) + 1;
 	} else if (currentBlockType == 3) {
-		col = Math.floor(Math.random() * 8);
+		col = Math.floor(Math.random() * 10) + 1;
 	} else if (currentBlockType == 4) {
-		col = Math.floor(Math.random() * 9);
+		col = Math.floor(Math.random() * 10) + 1;
 	} else if (currentBlockType == 5) {
-		col = Math.floor(Math.random() * 9);
+		col = Math.floor(Math.random() * 10) + 1;
 	} else 
-		col = Math.floor((Math.random() * 8) + 1);
-	return col;
+		col = Math.floor(Math.random() * 10) + 1;
+
+	return col + UNSEENAREA_SIDE;
 }
 
 function printNextBlock() {
@@ -882,79 +893,68 @@ const resetBlock = function(idx) {
 }
 
 const deletePrevPos = function() {
-	for (let i = 0 ; i < 4 ; i++) {
-		if (currentBlock.block[i] >= 0) 
-			resetBlock(currentBlock.block[i]);
-	}
+	const blockObj 			= currentBlock.block;
+	const coloredBlocks 	= blockObj.coloredBlock;
+	coloredBlocks.forEach( coords => {
+		const row = coords[0];
+		const col = coords[1];
+		const tmp = document.getElementById(`${row}-${col}`);
+		tmp.style.backgroundColor = "white";
+		tmp.style.outline = "1px solid #ccc";
+		block_occupied[row][col] = false;
+	})
 }
 
-const moveBlockOnce = function() {
-	for (let i = 0 ; i < 4 ; i++) {
-		let blockIdx = currentBlock.block[i];
-		if (blockIdx >= 0) {
-			currentBlock.block[i] += WIDTH;
-		} else if (blockIdx < -1) {
-			currentBlock.block[i] += 1;
-		} else {
-			
-		}
-	}
+const moveBlockCoords = function() {
+	const blockObj 			= currentBlock.block;
+	const coloredBlocks 	= blockObj.coloredBlock;
+	const blocks			= blockObj.block;
+
+	coloredBlocks.forEach( coords => { coords[0] += 1; });
+	blocks.forEach( coords => { coords[0] += 1; });
 }
 
 const dropBlock = function() {
 	// 1. 이전 위치 일괄 제거
 	deletePrevPos();
-	// 2. 새로운 위치 블록 색칠
-	for (let i = 0 ; i < 4 ; i++) {
-		let blockIdx = currentBlock.block[i];
-		if (blockIdx >= 0) {
-			currentBlock.block[i] += WIDTH;
-			colorBlock(blockIdx + WIDTH);
-		} else if (blockIdx < -1) {
-			currentBlock.block[i] += 1;
-		} else { // blockIdx == -1
-			switch(currentBlock.blockType) {
-				case 0: {
-					
-				}
-			}
-		}
-	}
+	// 2. 이동
+	moveBlockCoords();
+	// 3. 현재 블록 그래프에 그리기
+	printCurrentBlockOnGraph();
 }
 
 const printCurrentBlockOnGraph = () => {
-	for(let i = 0 ; i < 4 ; i++) {
-		let blockIdx = currentBlock.block[i];
-		if (blockIdx > 0) {
-			let block = document.getElementById(blockIdx);
-			block.style.backgroundColor = currentBlock.backgroundColor;
-			block_occupied[blockIdx] = true;
-		}
-	}
+	const blockObj 			= currentBlock.block;
+	const backgroundColor 	= currentBlock.backgroundColor;
+	const coloredBlocks 	= blockObj.coloredBlock;
+
+	coloredBlocks.forEach( coords => {
+		const row = coords[0];
+		const col = coords[1];
+		const tmp = document.getElementById(`${row}-${col}`);
+		tmp.style.backgroundColor = backgroundColor;
+		tmp.style.outline = "1px solid #ccc";
+		block_occupied[row][col] = true;
+	})
+
 }
 
 const cannot_go_down_more = function() {
-	// 1. check if block met the bottom
-	for(let i = 0 ; i < 4 ; i++) {
-		if (currentBlock.blockBottom[i]) {
-			blockIdx = currentBlock.block[i]
-			if (blockIdx + WIDTH >= HEIGHT * WIDTH) {
-				return true;
-			}
-		}
-	}
-	return false;
+	// 1. check if coloredblock met the bottom
+	
+	
 }
 
 const intervalTasks = function() {
 	dropBlock();
+	/*
 	if (cannot_go_down_more()) {
 		clearInterval(blockDropIntervalId);
 	}
+	*/
 }
 
-/*
-initialize_matrix();
+let block_occupied = initialize_matrix();
 buildMatrix_addId();
 buildNextBlockBox();
 
@@ -970,8 +970,6 @@ printCurrentBlockOnGraph();
 
 const blockDropIntervalId = setInterval(intervalTasks, 3000);
 
-
-*/
 
 /*
 구현할 기능

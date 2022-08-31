@@ -23,13 +23,12 @@ body {
 }
 
 .playground > ul {
-  width: 250px;
-  margin-left: calc((100% / 2) - 125px);
+  width: 450px;
+  margin-left: calc((100% - 450px) / 2);
 }
 
 .nextBlockBox {
   margin-top: 100px;
-  margin-left: 50px;
 }
 
 .playground > ul > li {
@@ -53,7 +52,6 @@ body {
 .playground > ul > li > ul > li {
   width: 25px;
   height: 25px;
-  outline: 1px solid #ccc
 }
 
 .nextBlockBox > ul > li > ul > li {
