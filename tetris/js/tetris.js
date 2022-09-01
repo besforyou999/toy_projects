@@ -3,6 +3,8 @@ const HEIGHT = 27;
 const UNSEENAREA_SIDE = 3;
 const UNSEENAREA_TOP = 4;
 const UNSEENAREA_BOTTOM = 3;
+const BLOCK_TYPE_NUMBER = 1;
+let   BLOCKDROPSPEED = 1000;
 
 const create2DArray = (rows, columns) => {
 	let arr = new Array(rows);
@@ -24,6 +26,20 @@ const initialize_matrix = () => {
 	return block_occupied;
 }
 
+class Coordinate {
+	constructor(row, col) {
+		this.row = row;
+		this.col = col;
+	}
+
+	copy() {
+		const row = this.row;
+		const col = this.col;
+		const newCopy = [row, col];
+		return newCopy;
+	}
+}
+
 class Block {
 	constructor() {
 		this.blockDir = 0;
@@ -32,17 +48,17 @@ class Block {
 	}
 }
 
-class IBlock {
+class IBlock{
 	block = create2DArray(4, 4);
 	coloredBlock = new Array(4);
 	blockDir = 0;
 	constructor(startCol) {
 		for (let i = 0 ; i < 4 ; i++) {
-			this.block[i][0] = [i, startCol - 1];
-			this.block[i][1] = [i, startCol];
-			this.block[i][2] = [i, startCol + 1];
-			this.block[i][3] = [i, startCol + 2];
-			this.coloredBlock[i] = [i, startCol];
+			this.block[i][0] = new Coordinate(i, startCol - 1);
+			this.block[i][1] = new Coordinate(i, startCol);
+			this.block[i][2] = new Coordinate(i, startCol + 1);
+			this.block[i][3] = new Coordinate(i, startCol + 2);
+			this.coloredBlock[i] = this.block[i][1];
 		}
 	}
 	
@@ -71,10 +87,10 @@ class IBlock {
 				break;
 			} 
 			case 3: {
-				this.coloredBlock[0] = this.block[2][0];
 				this.coloredBlock[1] = this.block[2][1];
 				this.coloredBlock[2] = this.block[2][2];
 				this.coloredBlock[3] = this.block[2][3];
+				this.coloredBlock[0] = this.block[2][0];
 				break;
 			}
 		}
@@ -82,48 +98,48 @@ class IBlock {
 
 	moveLeft() {
 		// check validity
-		if (this.block[0][0][1] == 0) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][0].col == 0) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col == UNSEENAREA_SIDE) return;
+		}
 
 		for (let i = 0 ; i < 4 ; i++) {
-			this.block[i][0][1] -= 1;
-			this.block[i][1][1] -= 1;
-			this.block[i][2][1] -= 1;
-			this.block[i][3][1] -= 1;
-			this.coloredBlock[i][1] -= 1;
+			this.block[i][0].col -= 1;
+			this.block[i][1].col -= 1;
+			this.block[i][2].col -= 1;
+			this.block[i][3].col -= 1;
 		}
 	}
 
 	moveRight() {
 		// check validity
-		if (this.block[0][3][1] == WIDTH - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == WIDTH - UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][3].col == WIDTH - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
+		}
 
 		for (let i = 0 ; i < 4 ; i++) {
-			this.block[i][0][1] += 1;
-			this.block[i][1][1] += 1;
-			this.block[i][2][1] += 1;
-			this.block[i][3][1] += 1;
-			this.coloredBlock[i][1] += 1;
+			this.block[i][0].col += 1;
+			this.block[i][1].col += 1;
+			this.block[i][2].col += 1;
+			this.block[i][3].col += 1;
 		}
 	}
 
 	moveDown() {
 		// check validity
-		if (this.block[3][0][0] == HEIGHT - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == HEIGHT - UNSEENAREA_BOTTOM) return;
-		});
+		if (this.block[3][0].row == HEIGHT - 1) return;
 		for (let i = 0 ; i < 4 ; i++) {
-			this.block[i][0][0] += 1;
-			this.block[i][1][0] += 1;
-			this.block[i][2][0] += 1;
-			this.block[i][3][0] += 1;
-			this.coloredBlock[i][0] += 1;
+			let coord = this.coloredBlock[i];
+			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		}
+		for (let i = 0 ; i < 4 ; i++) {
+			this.block[i][0].row += 1;
+			this.block[i][1].row += 1;
+			this.block[i][2].row += 1;
+			this.block[i][3].row += 1;
 		}
 	}
 }
@@ -134,10 +150,10 @@ class OBlock {
 	blockDir = 0;
 	startingRow = 2;
 	constructor(startCol) {
-		this.block[0][0] = this.coloredBlock[0] = [this.startingRow, startCol];
-		this.block[0][1] = this.coloredBlock[1] = [this.startingRow, startCol + 1];
-		this.block[1][0] = this.coloredBlock[2] = [this.startingRow + 1, startCol];
-		this.block[1][1] = this.coloredBlock[3] = [this.startingRow + 1, startCol + 1];
+		this.block[0][0] = this.coloredBlock[0] = new Coordinate(this.startingRow, startCol);
+		this.block[0][1] = this.coloredBlock[1] = new Coordinate(this.startingRow, startCol + 1);
+		this.block[1][0] = this.coloredBlock[2] = new Coordinate(this.startingRow + 1, startCol);
+		this.block[1][1] = this.coloredBlock[3] = new Coordinate(this.startingRow + 1, startCol + 1);
 	}
 
 	spinDir() {
@@ -146,39 +162,27 @@ class OBlock {
 
 	moveLeft() {
 		// check validity
-		if (this.block[0][0][1] == UNSEENAREA_SIDE) return;
-		this.block[0][0][1] -= 1;
-		this.block[0][1][1] -= 1;
-		this.block[1][0][1] -= 1;
-		this.block[1][1][1] -= 1;
-		this.coloredBlock[0] = this.block[0][0];
-		this.coloredBlock[1] = this.block[0][1];
-		this.coloredBlock[2] = this.block[1][0];
-		this.coloredBlock[3] = this.block[1][1];
+		if (this.block[0][0].col <= UNSEENAREA_SIDE) return;
+		this.block[0][0].col -= 1;
+		this.block[0][1].col -= 1;
+		this.block[1][0].col -= 1;
+		this.block[1][1].col -= 1;
 	}
 	
 	moveRight() {
-		if (this.block[0][1][1] == WIDTH - UNSEENAREA_SIDE) return;
-		this.block[0][0][1] += 1;
-		this.block[0][1][1] += 1;
-		this.block[1][0][1] += 1;
-		this.block[1][1][1] += 1;
-		this.coloredBlock[0] = this.block[0][0];
-		this.coloredBlock[1] = this.block[0][1];
-		this.coloredBlock[2] = this.block[1][0];
-		this.coloredBlock[3] = this.block[1][1];
+		if (this.block[0][1].col >= WIDTH - UNSEENAREA_SIDE - 1) return;
+		this.block[0][0].col += 1;
+		this.block[0][1].col += 1;
+		this.block[1][0].col += 1;
+		this.block[1][1].col += 1;
 	}
 
 	moveDown() {
-		if (this.block[1][0][0] == HEIGHT - UNSEENAREA_BOTTOM) return;
-		this.block[0][0][0] += 1;
-		this.block[0][1][0] += 1;
-		this.block[1][0][0] += 1;
-		this.block[1][1][0] += 1;
-		this.coloredBlock[0] = this.block[0][0];
-		this.coloredBlock[1] = this.block[0][1];
-		this.coloredBlock[2] = this.block[1][0];
-		this.coloredBlock[3] = this.block[1][1];
+		if (this.block[1][0].row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		this.block[0][0].row += 1;
+		this.block[0][1].row += 1;
+		this.block[1][0].row += 1;
+		this.block[1][1].row += 1;
 	}
 }
 
@@ -188,14 +192,14 @@ class ZBlock {
 	blockDir = 0;
 	constructor(startCol) {
 		for (let i = 1 ; i <= 3 ; i++) {
-			this.block[i - 1][0] = [i, startCol - 1];
-			this.block[i - 1][1] = [i, startCol];
-			this.block[i - 1][2] = [i, startCol + 1];
+			this.block[i - 1][0] = new Coordinate(i, startCol - 1);
+			this.block[i - 1][1] = new Coordinate(i, startCol);
+			this.block[i - 1][2] = new Coordinate(i, startCol + 1);
 		}
-		this.coloredBlock[0] = [2, startCol - 1];
-		this.coloredBlock[1] = [2, startCol];
-		this.coloredBlock[2] = [3, startCol];
-		this.coloredBlock[3] = [3, startCol + 1];
+		this.coloredBlock[0] = this.block[1][0];
+		this.coloredBlock[1] = this.block[1][1];
+		this.coloredBlock[2] = this.block[2][1];
+		this.coloredBlock[3] = this.block[2][2];
 	}
 	
 	spinDir() {
@@ -234,43 +238,43 @@ class ZBlock {
 
 	moveLeft() {
 		// check validity
-		if (this.block[0][0][1] == 0) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][0].col == 0) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col <= UNSEENAREA_SIDE) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] -= 1;
-			this.block[i][1][1] -= 1;
-			this.block[i][2][1] -= 1;
-			this.coloredBlock[i][1] -= 1;
+			this.block[i][0].col -= 1;
+			this.block[i][1].col -= 1;
+			this.block[i][2].col -= 1;
 		}
 	}
 
 	moveRight() {
 		// check validity
-		if (this.block[0][2][1] == WIDTH - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == WIDTH - UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][2].col == WIDTH - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] += 1;
-			this.block[i][1][1] += 1;
-			this.block[i][2][1] += 1;
-			this.coloredBlock[i][1] += 1;
+			this.block[i][0].col += 1;
+			this.block[i][1].col += 1;
+			this.block[i][2].col += 1;
 		}
 	}
 
 	moveDown() {
 		// check validity
-		if (this.block[2][0][0] == HEIGHT - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == HEIGHT - UNSEENAREA_BOTTOM) return;
-		});
+		if (this.block[2][0].row == HEIGHT - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][0] += 1;
-			this.block[i][1][0] += 1;
-			this.block[i][2][0] += 1;
-			this.coloredBlock[i][0] += 1;
+			this.block[i][0].row += 1;
+			this.block[i][1].row += 1;
+			this.block[i][2].row += 1;
 		}
 	}
 }
@@ -282,14 +286,14 @@ class SBlock {
 	startingRow = 2;
 	constructor(startCol) {
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0] = [i, startCol - 1];
-			this.block[i][1] = [i, startCol];
-			this.block[i][2] = [i, startCol + 1];
+			this.block[i][0] = new Coordinate(i, startCol - 1);
+			this.block[i][1] = new Coordinate(i, startCol);
+			this.block[i][2] = new Coordinate(i, startCol + 1);
 		}
-		this.coloredBlock[0] = [this.startingRow, startCol];
-		this.coloredBlock[1] = [this.startingRow, startCol + 1];
-		this.coloredBlock[2] = [this.startingRow + 1, startCol - 1];
-		this.coloredBlock[3] = [this.startingRow + 1, startCol];
+		this.coloredBlock[0] = this.block[2][0];
+		this.coloredBlock[1] = this.block[2][1];
+		this.coloredBlock[2] = this.block[1][1];
+		this.coloredBlock[3] = this.block[1][2];
 	}
 	
 	spinDir() {
@@ -328,43 +332,43 @@ class SBlock {
 
 	moveLeft() {
 		// check validity
-		if (this.block[0][0][1] == 0) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][0].col == 0) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col <= UNSEENAREA_SIDE) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] -= 1;
-			this.block[i][1][1] -= 1;
-			this.block[i][2][1] -= 1;
-			this.coloredBlock[i][1] -= 1;
+			this.block[i][0].col -= 1;
+			this.block[i][1].col -= 1;
+			this.block[i][2].col -= 1;
 		}
 	}
 
 	moveRight() {
 		// check validity
-		if (this.block[0][2][1] == WIDTH - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == WIDTH - UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][2].col == WIDTH - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] += 1;
-			this.block[i][1][1] += 1;
-			this.block[i][2][1] += 1;
-			this.coloredBlock[i][1] += 1;
+			this.block[i][0].col += 1;
+			this.block[i][1].col += 1;
+			this.block[i][2].col += 1;
 		}
 	}
 
 	moveDown() {
 		// check validity
-		if (this.block[2][0][0] == HEIGHT - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == HEIGHT - UNSEENAREA_BOTTOM) return;
-		});
+		if (this.block[2][0].row == HEIGHT - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][0] += 1;
-			this.block[i][1][0] += 1;
-			this.block[i][2][0] += 1;
-			this.coloredBlock[i][0] += 1;
+			this.block[i][0].row += 1;
+			this.block[i][1].row += 1;
+			this.block[i][2].row += 1;
 		}
 	}
 }
@@ -376,14 +380,14 @@ class JBlock {
 	startingRow = 1;
 	constructor(startCol) {
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0] = [i, startCol - 1];
-			this.block[i][1] = [i, startCol];
-			this.block[i][2] = [i, startCol + 1];
+			this.block[i][0] = new Coordinate(i, startCol - 1);
+			this.block[i][1] = new Coordinate(i, startCol);
+			this.block[i][2] = new Coordinate(i, startCol + 1);
 		}
-		this.coloredBlock[0] = [this.startingRow, startCol];
-		this.coloredBlock[1] = [this.startingRow + 1, startCol];
-		this.coloredBlock[2] = [this.startingRow + 2, startCol - 1];
-		this.coloredBlock[3] = [this.startingRow + 2, startCol];
+		this.coloredBlock[0] = this.block[0][1];
+		this.coloredBlock[1] = this.block[1][1];
+		this.coloredBlock[2] = this.block[2][1];
+		this.coloredBlock[3] = this.block[2][0];
 	}
 	
 	spinDir() {
@@ -422,43 +426,43 @@ class JBlock {
 
 	moveLeft() {
 		// check validity
-		if (this.block[0][0][1] == 0) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][0].col == 0) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col <= UNSEENAREA_SIDE) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] -= 1;
-			this.block[i][1][1] -= 1;
-			this.block[i][2][1] -= 1;
-			this.coloredBlock[i][1] -= 1;
+			this.block[i][0].col -= 1;
+			this.block[i][1].col -= 1;
+			this.block[i][2].col -= 1;
 		}
 	}
 
 	moveRight() {
 		// check validity
-		if (this.block[0][2][1] == WIDTH - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == WIDTH - UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][2].col == WIDTH - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] += 1;
-			this.block[i][1][1] += 1;
-			this.block[i][2][1] += 1;
-			this.coloredBlock[i][1] += 1;
+			this.block[i][0].col += 1;
+			this.block[i][1].col += 1;
+			this.block[i][2].col += 1;
 		}
 	}
 
 	moveDown() {
 		// check validity
-		if (this.block[2][0][0] == HEIGHT - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == HEIGHT - UNSEENAREA_BOTTOM) return;
-		});
+		if (this.block[2][0].row == HEIGHT - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][0] += 1;
-			this.block[i][1][0] += 1;
-			this.block[i][2][0] += 1;
-			this.coloredBlock[i][0] += 1;
+			this.block[i][0].row += 1;
+			this.block[i][1].row += 1;
+			this.block[i][2].row += 1;
 		}
 	}
 }
@@ -470,14 +474,14 @@ class LBlock {
 	startingRow = 1;
 	constructor(startCol) {
 		for (let i = 1 ; i <= 3 ; i++) {
-			this.block[i - 1][0] = [i, startCol - 1];
-			this.block[i - 1][1] = [i, startCol];
-			this.block[i - 1][2] = [i, startCol + 1];
+			this.block[i - 1][0] = new Coordinate(i, startCol - 1);
+			this.block[i - 1][1] = new Coordinate(i, startCol);
+			this.block[i - 1][2] = new Coordinate(i, startCol + 1);
 		}
-		this.coloredBlock[0] = [this.startingRow, startCol];
-		this.coloredBlock[1] = [this.startingRow + 1, startCol];
-		this.coloredBlock[2] = [this.startingRow + 2, startCol];
-		this.coloredBlock[3] = [this.startingRow + 2, startCol + 1];
+		this.coloredBlock[0] = this.block[0][1];
+		this.coloredBlock[1] = this.block[1][1];
+		this.coloredBlock[2] = this.block[2][1];
+		this.coloredBlock[3] = this.block[2][2];
 	}
 	
 	spinDir() {
@@ -516,43 +520,43 @@ class LBlock {
 
 	moveLeft() {
 		// check validity
-		if (this.block[0][0][1] == 0) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][0].col == 0) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col <= UNSEENAREA_SIDE) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] -= 1;
-			this.block[i][1][1] -= 1;
-			this.block[i][2][1] -= 1;
-			this.coloredBlock[i][1] -= 1;
+			this.block[i][0].col -= 1;
+			this.block[i][1].col -= 1;
+			this.block[i][2].col -= 1;
 		}
 	}
 
 	moveRight() {
 		// check validity
-		if (this.block[0][2][1] == WIDTH - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == WIDTH - UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][2].col == WIDTH - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] += 1;
-			this.block[i][1][1] += 1;
-			this.block[i][2][1] += 1;
-			this.coloredBlock[i][1] += 1;
+			this.block[i][0].col += 1;
+			this.block[i][1].col += 1;
+			this.block[i][2].col += 1;
 		}
 	}
 
 	moveDown() {
 		// check validity
-		if (this.block[2][0][0] == HEIGHT - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == HEIGHT - UNSEENAREA_BOTTOM) return;
-		});
+		if (this.block[2][0].row == HEIGHT - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][0] += 1;
-			this.block[i][1][0] += 1;
-			this.block[i][2][0] += 1;
-			this.coloredBlock[i][0] += 1;
+			this.block[i][0].row += 1;
+			this.block[i][1].row += 1;
+			this.block[i][2].row += 1;
 		}
 	}
 }
@@ -564,14 +568,14 @@ class TBlock {
 	startingRow = 2;
 	constructor(startCol) {
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0] = [i, startCol - 1];
-			this.block[i][1] = [i, startCol];
-			this.block[i][2] = [i, startCol + 1];
+			this.block[i][0] = new Coordinate(i, startCol - 1);
+			this.block[i][1] = new Coordinate(i, startCol);
+			this.block[i][2] = new Coordinate(i, startCol + 1);
 		}
-		this.coloredBlock[0] = [this.startingRow, startCol - 1];
-		this.coloredBlock[1] = [this.startingRow, startCol];
-		this.coloredBlock[2] = [this.startingRow + 1, startCol];
-		this.coloredBlock[3] = [this.startingRow, startCol + 1];
+		this.coloredBlock[0] = this.block[1][0];
+		this.coloredBlock[1] = this.block[1][1];
+		this.coloredBlock[2] = this.block[1][2];
+		this.coloredBlock[3] = this.block[2][1];
 	}
 	
 	spinDir() {
@@ -610,43 +614,43 @@ class TBlock {
 
 	moveLeft() {
 		// check validity
-		if (this.block[0][0][1] == 0) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][0].col == 0) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col <= UNSEENAREA_SIDE) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] -= 1;
-			this.block[i][1][1] -= 1;
-			this.block[i][2][1] -= 1;
-			this.coloredBlock[i][1] -= 1;
+			this.block[i][0].col -= 1;
+			this.block[i][1].col -= 1;
+			this.block[i][2].col -= 1;
 		}
 	}
 
 	moveRight() {
 		// check validity
-		if (this.block[0][2][1] == WIDTH - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == WIDTH - UNSEENAREA_SIDE) return;
-		});
+		if (this.block[0][2].col == WIDTH - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][1] += 1;
-			this.block[i][1][1] += 1;
-			this.block[i][2][1] += 1;
-			this.coloredBlock[i][1] += 1;
+			this.block[i][0].col += 1;
+			this.block[i][1].col += 1;
+			this.block[i][2].col += 1;
 		}
 	}
 
 	moveDown() {
 		// check validity
-		if (this.block[2][0][0] == HEIGHT - 1) return;
-		this.coloredBlock.forEach(coord => {
-			if (coord[1] == HEIGHT - UNSEENAREA_BOTTOM) return;
-		});
+		if (this.block[2][0].row == HEIGHT - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		}
 		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0][0] += 1;
-			this.block[i][1][0] += 1;
-			this.block[i][2][0] += 1;
-			this.coloredBlock[i][0] += 1;
+			this.block[i][0].row += 1;
+			this.block[i][1].row += 1;
+			this.block[i][2].row += 1;
 		}
 	}
 }
@@ -698,8 +702,28 @@ class CurrentBlock {
 	}
 }
 
+const arrowKeyHander = (key) => {
+	const blockObj = currentBlock.block;
+	deletePrevPos();
+	switch(key) {
+		case "ArrowLeft": {
+			blockObj.moveLeft();
+			break;
+		}
+		case "ArrowRight": {
+			blockObj.moveRight();
+			break;
+		}
+		case "ArrowDown": {
+			blockObj.moveDown();
+			break;
+		}
+	}
+	printCurrentBlockOnGraph();
+}
+
 function dealWithKeyboard(event) {
-	console.log(event.key);
+	arrowKeyHander(event.key);
 }
 
 function buildMatrix_addId() {
@@ -747,7 +771,7 @@ function buildNextBlockBox() {
 }
 
 function makeRandomNumRange0_6() {
-	return Math.floor(Math.random() * 7);
+	return Math.floor(Math.random() * BLOCK_TYPE_NUMBER) + 6;
 }
 // 0: 막대기, 1: 사각형, 2: z , 3: s, 4: J, 5: L, 6: T
 function selectBlockStartCol() {
@@ -895,9 +919,11 @@ const resetBlock = function(idx) {
 const deletePrevPos = function() {
 	const blockObj 			= currentBlock.block;
 	const coloredBlocks 	= blockObj.coloredBlock;
+	console.log(coloredBlocks);
 	coloredBlocks.forEach( coords => {
-		const row = coords[0];
-		const col = coords[1];
+		const row = coords.row;
+		const col = coords.col;
+		console.log(row, col);
 		const tmp = document.getElementById(`${row}-${col}`);
 		tmp.style.backgroundColor = "white";
 		tmp.style.outline = "1px solid #ccc";
@@ -907,11 +933,12 @@ const deletePrevPos = function() {
 
 const moveBlockCoords = function() {
 	const blockObj 			= currentBlock.block;
-	const coloredBlocks 	= blockObj.coloredBlock;
 	const blocks			= blockObj.block;
-
-	coloredBlocks.forEach( coords => { coords[0] += 1; });
-	blocks.forEach( coords => { coords[0] += 1; });
+	blocks.forEach( ele => { 
+		ele.forEach( coord => {
+			coord.row += 1;
+		})
+	});
 }
 
 const dropBlock = function() {
@@ -929,8 +956,8 @@ const printCurrentBlockOnGraph = () => {
 	const coloredBlocks 	= blockObj.coloredBlock;
 
 	coloredBlocks.forEach( coords => {
-		const row = coords[0];
-		const col = coords[1];
+		const row = coords.row;
+		const col = coords.col;
 		const tmp = document.getElementById(`${row}-${col}`);
 		tmp.style.backgroundColor = backgroundColor;
 		tmp.style.outline = "1px solid #ccc";
@@ -939,19 +966,66 @@ const printCurrentBlockOnGraph = () => {
 
 }
 
+const checkIfBlockMetTheBottom = () => {
+	const blockObj 			= currentBlock.block;
+	const coloredBlocks 	= blockObj.coloredBlock;
+	let result = false;
+	coloredBlocks.forEach( coords => {
+		const row = coords.row;
+		if (row >= HEIGHT - UNSEENAREA_BOTTOM - 1) {
+			result = true;
+			return;
+		}
+	});
+	return result;
+}
+
+const coordIsInSet = (set, coord) => {
+	let result = false;
+	set.forEach(item => {
+		if (item.row == coord.row && item.col == coord.col) {
+			result = true;
+			return;
+		}
+	});
+	return result;
+}
+
+const otherBlockIsBlockingPath = () => {
+	const blockObj 			= currentBlock.block;
+	const coloredBlocks 	= blockObj.coloredBlock;
+	let result = false;
+	let coloredBlockCoordSet = new Set();
+	coloredBlocks.forEach(coords => coloredBlockCoordSet.add(coords));
+	coloredBlocks.forEach( coords => {
+		const row = coords.row;
+		const col = coords.col;
+		const tmp = new Coordinate(row + 1, col);
+		if (!coordIsInSet(coloredBlockCoordSet, tmp)) {
+			if (block_occupied[row + 1][col]) {
+				result = true;
+				return;
+			}
+		}
+	});
+
+	return result;
+}
 const cannot_go_down_more = function() {
 	// 1. check if coloredblock met the bottom
-	
-	
+	let result = false;
+	if (checkIfBlockMetTheBottom()) return true;
+	if (otherBlockIsBlockingPath()) return true;
+	return result;
 }
 
 const intervalTasks = function() {
-	dropBlock();
-	/*
 	if (cannot_go_down_more()) {
 		clearInterval(blockDropIntervalId);
+		return;
 	}
-	*/
+	dropBlock();
+	
 }
 
 let block_occupied = initialize_matrix();
@@ -968,14 +1042,17 @@ printNextBlock();
 
 printCurrentBlockOnGraph();
 
-const blockDropIntervalId = setInterval(intervalTasks, 3000);
+const blockDropIntervalId = setInterval(intervalTasks, BLOCKDROPSPEED);
 
 
 /*
 구현할 기능
-1. 충돌 판단
-2. 일정시간 지나면 블록 하강
-3. 블록 배치
+1. 충돌 판단 	
+	1. 바닥 				   - *
+	2. 다른 블록				- *								
+2. 일정시간 지나면 블록 하강 		- *
+3. 블록 배치  					- *
 4. 블록 회전
-5. 넥스트 블록 -> 현재 블록 / 새로운 넥스트 블록
+5. 블록 프로토타입 구현
+6. 키보드 입력에 따라 블록 이동
 */
