@@ -3,7 +3,11 @@ const HEIGHT = 27;
 const UNSEENAREA_SIDE = 3;
 const UNSEENAREA_TOP = 4;
 const UNSEENAREA_BOTTOM = 3;
-const BLOCK_TYPE_NUMBER = 1;
+const BLOCK_TYPE_NUMBER = 7;
+const GAME_END = false;
+const NEXT_BOX_WIDTH = 5;
+const NEXT_BOX_HEIGHT = 6;
+const NEXT_BLOCK_HEADER = "next-block-";
 let   BLOCKDROPSPEED = 1000;
 
 const create2DArray = (rows, columns) => {
@@ -55,6 +59,8 @@ class Block {
 			let coord = this.coloredBlock[i];
 			if (coord.col <= UNSEENAREA_SIDE) return;
 		}
+		if (otherBlockIsBlockingPathAtLeft()) return;
+
 		for (let i = 0 ; i < 3 ; i++) {
 			this.block[i][0].col -= 1;
 			this.block[i][1].col -= 1;
@@ -69,6 +75,8 @@ class Block {
 			let coord = this.coloredBlock[i];
 			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
 		}
+		if (otherBlockIsBlockingPathAtRight()) return;
+
 		for (let i = 0 ; i < 3 ; i++) {
 			this.block[i][0].col += 1;
 			this.block[i][1].col += 1;
@@ -83,6 +91,7 @@ class Block {
 			let coord = this.coloredBlock[i];
 			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
 		}
+		if (otherBlockIsBlockingPathAtBelow()) return;
 		for (let i = 0 ; i < 3 ; i++) {
 			this.block[i][0].row += 1;
 			this.block[i][1].row += 1;
@@ -196,6 +205,7 @@ class IBlock extends Block {
 			let coord = this.coloredBlock[i];
 			if (coord.col == UNSEENAREA_SIDE) return;
 		}
+		if (otherBlockIsBlockingPathAtLeft()) return;
 
 		for (let i = 0 ; i < 4 ; i++) {
 			this.block[i][0].col -= 1;
@@ -212,6 +222,7 @@ class IBlock extends Block {
 			let coord = this.coloredBlock[i];
 			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
 		}
+		if (otherBlockIsBlockingPathAtRight()) return;
 
 		for (let i = 0 ; i < 4 ; i++) {
 			this.block[i][0].col += 1;
@@ -228,6 +239,8 @@ class IBlock extends Block {
 			let coord = this.coloredBlock[i];
 			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
 		}
+		if (otherBlockIsBlockingPathAtBelow()) return;
+
 		for (let i = 0 ; i < 4 ; i++) {
 			this.block[i][0].row += 1;
 			this.block[i][1].row += 1;
@@ -257,6 +270,8 @@ class OBlock extends Block {
 	moveLeft() {
 		// check validity
 		if (this.block[0][0].col <= UNSEENAREA_SIDE) return;
+		if (otherBlockIsBlockingPathAtLeft()) return;
+
 		this.block[0][0].col -= 1;
 		this.block[0][1].col -= 1;
 		this.block[1][0].col -= 1;
@@ -265,6 +280,8 @@ class OBlock extends Block {
 	
 	moveRight() {
 		if (this.block[0][1].col >= WIDTH - UNSEENAREA_SIDE - 1) return;
+		if (otherBlockIsBlockingPathAtRight()) return;
+
 		this.block[0][0].col += 1;
 		this.block[0][1].col += 1;
 		this.block[1][0].col += 1;
@@ -273,6 +290,7 @@ class OBlock extends Block {
 
 	moveDown() {
 		if (this.block[1][0].row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		if (otherBlockIsBlockingPathAtBelow()) return;
 		this.block[0][0].row += 1;
 		this.block[0][1].row += 1;
 		this.block[1][0].row += 1;
@@ -614,7 +632,9 @@ const arrowKeyHander = (key) => {
 }
 
 function dealWithKeyboard(event) {
-	arrowKeyHander(event.key);
+	if (event.key == "ArrowLeft" || event.key == "ArrowRight"
+		|| event.key == "ArrowDown" || event.key == "ArrowUp")
+			arrowKeyHander(event.key);
 } 
 
 function buildMatrix_addId() {
@@ -646,7 +666,7 @@ function buildNextBlockBox() {
 		const ul = document.createElement("ul");
 		for (let j = 0 ; j < 5 ; j++) {
 			const matrix = document.createElement("li");
-			matrix.id = "next-block-" + String(id);
+			matrix.id = NEXT_BLOCK_HEADER + String(id);
 			ul.append(matrix);
 			id += 1;
 		}
@@ -661,8 +681,20 @@ function buildNextBlockBox() {
 	block.prepend(box_name);
 }
 
+const clearNextBox = () => {
+	let id = 0;
+	for (let i = 0 ; i < NEXT_BOX_HEIGHT ; i++) {
+		id = 5 * i;
+		for (let j = 0 ; j < NEXT_BOX_WIDTH ; j++) {
+			const mat = document.getElementById(NEXT_BLOCK_HEADER + String(id));
+			mat.style.backgroundColor = "white";
+			id += 1;
+		}
+	}
+}
+
 function makeRandomNumRange0_6() {
-	return Math.floor(Math.random() * BLOCK_TYPE_NUMBER) + 6;
+	return Math.floor(Math.random() * BLOCK_TYPE_NUMBER);
 }
 // 0: 막대기, 1: 사각형, 2: z , 3: s, 4: J, 5: L, 6: T
 function selectBlockStartCol() {
@@ -793,20 +825,6 @@ function printTBlock() {
 	block4.style.backgroundColor = "purple";
 }
 
-const colorBlock = function(idx) {
-	const block = document.getElementById(idx);
-	block.style.backgroundColor = currentBlock.backgroundColor;
-	block.style.outline = "1px solid #ccc";
-	block_occupied[idx] = true;
-}
-
-const resetBlock = function(idx) {
-	const block = document.getElementById(idx);
-	block.style.backgroundColor = "white";
-	block.style.outline = "1px solid #ccc";
-	block_occupied[idx] = false;
-}
-
 const deletePrevPos = function() {
 	const blockObj 			= currentBlock.block;
 	const coloredBlocks 	= blockObj.coloredBlock;
@@ -843,7 +861,6 @@ const printCurrentBlockOnGraph = () => {
 	const blockObj 			= currentBlock.block;
 	const backgroundColor 	= currentBlock.backgroundColor;
 	const coloredBlocks 	= blockObj.coloredBlock;
-
 	coloredBlocks.forEach( coords => {
 		const row = coords.row;
 		const col = coords.col;
@@ -880,7 +897,7 @@ const coordIsInSet = (set, coord) => {
 	return result;
 }
 
-const otherBlockIsBlockingPath = () => {
+const otherBlockIsBlockingPathAtBelow = () => {
 	const blockObj 			= currentBlock.block;
 	const coloredBlocks 	= blockObj.coloredBlock;
 	let result = false;
@@ -900,18 +917,67 @@ const otherBlockIsBlockingPath = () => {
 
 	return result;
 }
+
+const otherBlockIsBlockingPathAtLeft = () => {
+	const blockObj 			= currentBlock.block;
+	const coloredBlocks 	= blockObj.coloredBlock;
+	let result = false;
+	let coloredBlockCoordSet = new Set();
+	coloredBlocks.forEach(coords => coloredBlockCoordSet.add(coords));
+	coloredBlocks.forEach( coords => {
+		const row = coords.row;
+		const col = coords.col;
+		const tmp = new Coordinate(row, col - 1);
+		if (!coordIsInSet(coloredBlockCoordSet, tmp)) {
+			if (block_occupied[row][col - 1]) {
+				result = true;
+				return;
+			}
+		}
+	});
+	return result;
+}
+
+const otherBlockIsBlockingPathAtRight = () => {
+	const blockObj 			= currentBlock.block;
+	const coloredBlocks 	= blockObj.coloredBlock;
+	let result = false;
+	let coloredBlockCoordSet = new Set();
+	coloredBlocks.forEach(coords => coloredBlockCoordSet.add(coords));
+	coloredBlocks.forEach( coords => {
+		const row = coords.row;
+		const col = coords.col;
+		const tmp = new Coordinate(row, col + 1);
+		if (!coordIsInSet(coloredBlockCoordSet, tmp)) {
+			if (block_occupied[row][col + 1]) {
+				result = true;
+				return;
+			}
+		}
+	});
+	return result;
+}
+
 const cannot_go_down_more = function() {
 	// 1. check if coloredblock met the bottom
 	let result = false;
 	if (checkIfBlockMetTheBottom()) return true;
-	if (otherBlockIsBlockingPath()) return true;
+	if (otherBlockIsBlockingPathAtBelow()) return true;
 	return result;
+}
+
+const switchNextBlockToCurblock = () => {
+	currentBlockType = nextBlockType;
+	nextBlockType = makeRandomNumRange0_6();
+	currentBlock = new CurrentBlock(currentBlockType, selectBlockStartCol());
 }
 
 const intervalTasks = function() {
 	if (cannot_go_down_more()) {
-		clearInterval(blockDropIntervalId);
-		return;
+		switchNextBlockToCurblock();
+		clearNextBox();
+		printNextBlock();
+		printCurrentBlockOnGraph();
 	}
 	dropBlock();
 	
@@ -931,6 +997,7 @@ printNextBlock();
 
 printCurrentBlockOnGraph();
 
+
 const blockDropIntervalId = setInterval(intervalTasks, BLOCKDROPSPEED);
 
 
@@ -941,7 +1008,9 @@ const blockDropIntervalId = setInterval(intervalTasks, BLOCKDROPSPEED);
 	2. 다른 블록				- *								
 2. 일정시간 지나면 블록 하강 		- *
 3. 블록 배치  					- *
-4. 블록 회전
-5. 블록 프로토타입 구현
-6. 키보드 입력에 따라 블록 이동
+4. 블록 회전					- *
+5. 블록 프로토타입 구현			   - *
+6. 키보드 입력에 따라 블록 이동	     - *
+7. 블록 바닥에 닿을시 쌓아놓기
+8. 넥스트 블록 -> 현재 블록, 새로운 넥스트 블록
 */
