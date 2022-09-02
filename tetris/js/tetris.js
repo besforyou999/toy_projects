@@ -144,6 +144,15 @@ class Block {
 			this.moveBlocksRow(overedBelow);
 	}
 
+	changeBackgroundColor(color) {
+		this.coloredBlock.forEach(item => {
+			const row = item.row;
+			const col = item.col;
+			const b = document.getElementById(`${row}-${col}`);
+			b.style.backgroundColor = color;
+		});
+	}
+
 }
 
 class IBlock extends Block {
@@ -958,8 +967,25 @@ const otherBlockIsBlockingPathAtRight = () => {
 	return result;
 }
 
+const deleteBlock = (row, col) => {
+	const mat = document.getElementById(`${row}-${col}`);
+	mat.style.backgroundColor = "white";
+	block_occupied[row][col] = false;
+}
+
+const occupyBlock = (row, col) => {
+	const mat = document.getElementById(`${row}-${col}`);
+	mat.style.backgroundColor = "gray";
+	block_occupied[row][col] = true;
+}
+
+const clearRow = (rowNumber) => {
+	for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
+		deleteBlock(rowNumber, col);
+	}
+}
+
 const cannot_go_down_more = function() {
-	// 1. check if coloredblock met the bottom
 	let result = false;
 	if (checkIfBlockMetTheBottom()) return true;
 	if (otherBlockIsBlockingPathAtBelow()) return true;
@@ -972,8 +998,50 @@ const switchNextBlockToCurblock = () => {
 	currentBlock = new CurrentBlock(currentBlockType, selectBlockStartCol());
 }
 
+const deleteFullRow = () => {
+	let clearedRowNumber = 0;
+	for (let row = HEIGHT - UNSEENAREA_BOTTOM - 1 ; row >= UNSEENAREA_BOTTOM + 1; row--) {
+		let rowFull = true;
+		for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
+			if (block_occupied[row][col] == false) {
+				rowFull = false;
+				break;
+			}
+		}
+		if (rowFull) {
+			clearRow(row);
+			clearedRowNumber += 1;
+		}
+	}
+	return clearedRowNumber;
+}
+
+
+const pullDownGrayBlocks = (dropLength) => {
+	for (let row = HEIGHT - UNSEENAREA_BOTTOM - 1 - dropLength; row >= UNSEENAREA_BOTTOM + 1; row--) {
+		for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
+			if (block_occupied[row][col] == true) {
+				deleteBlock(row, col);
+				occupyBlock(row + dropLength , col);
+			}
+		}
+	}
+}
+
+const changeScore = (deletedRowNumber) => {
+	const title = document.querySelector('.score')
+	title.text = String(deletedRowNumber);
+}
+
 const intervalTasks = function() {
 	if (cannot_go_down_more()) {
+		currentBlock.block.changeBackgroundColor('gray');
+		const deletedRowNumber = deleteFullRow();
+		if (deletedRowNumber > 0) {
+			pullDownGrayBlocks(deletedRowNumber);
+			changeScore(deletedRowNumber);
+		}
+		
 		switchNextBlockToCurblock();
 		clearNextBox();
 		printNextBlock();
@@ -996,7 +1064,6 @@ document.addEventListener("keydown", dealWithKeyboard, false);
 printNextBlock();
 
 printCurrentBlockOnGraph();
-
 
 const blockDropIntervalId = setInterval(intervalTasks, BLOCKDROPSPEED);
 
