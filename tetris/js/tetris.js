@@ -8,7 +8,7 @@ const GAME_END = false;
 const NEXT_BOX_WIDTH = 5;
 const NEXT_BOX_HEIGHT = 6;
 const NEXT_BLOCK_HEADER = "next-block-";
-let   BLOCKDROPSPEED = 1000;
+const BLOCK_DROP_SPEED = 1000;
 let   SCORE = 10;
 
 const create2DArray = (rows, columns) => {
@@ -678,12 +678,15 @@ const findDepthToFall = (bottomBlocks) => {
 }
 
 const spacebarHander = () => {
-	
 	const bottomBlocks = findBottomBlocks();
 	const depthToFall = findDepthToFall(bottomBlocks);
 	deletePrevPos();
 	moveBlockCoordsDown(depthToFall);
 	printCurrentBlockOnGraph();
+
+	clearInterval(blockDropIntervalId);
+	intervalTasks();
+	blockDropIntervalId = setInterval(intervalTasks, BLOCK_DROP_SPEED);
 }
 
 function dealWithKeyboard(event) {
@@ -1077,7 +1080,17 @@ const pullDownGrayBlocks = (dropLength) => {
 	}
 }
 
-const changeScore = () => {
+const updateScore = () => {
+	const deletedRowNumber = deleteFullRow();
+	if (deletedRowNumber > 0) {
+		pullDownGrayBlocks(deletedRowNumber);
+		SCORE += deletedRowNumber;
+		changeScoreText(SCORE);
+	}
+}
+
+
+const changeScoreText = (deletedRowNumber) => {
 	const title = document.querySelector('.score > p');
 	title.innerText = String(SCORE);
 }
@@ -1085,13 +1098,7 @@ const changeScore = () => {
 const intervalTasks = function() {
 	if (cannot_go_down_more()) {
 		currentBlock.block.changeBackgroundColor('gray');
-		const deletedRowNumber = deleteFullRow();
-		if (deletedRowNumber > 0) {
-			pullDownGrayBlocks(deletedRowNumber);
-			SCORE += deletedRowNumber;
-			changeScore(SCORE);
-		}
-		
+		updateScore();
 		switchNextBlockToCurblock();
 		clearNextBox();
 		printNextBlock();
@@ -1114,7 +1121,7 @@ printNextBlock();
 
 printCurrentBlockOnGraph();
 
-const blockDropIntervalId = setInterval(intervalTasks, BLOCKDROPSPEED);
+let blockDropIntervalId = setInterval(intervalTasks, BLOCK_DROP_SPEED);
 
 
 /*
