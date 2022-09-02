@@ -48,11 +48,12 @@ class Block {
 	}
 }
 
-class IBlock{
+class IBlock extends Block {
 	block = create2DArray(4, 4);
 	coloredBlock = new Array(4);
 	blockDir = 0;
 	constructor(startCol) {
+		super();
 		for (let i = 0 ; i < 4 ; i++) {
 			this.block[i][0] = new Coordinate(i, startCol - 1);
 			this.block[i][1] = new Coordinate(i, startCol);
@@ -724,7 +725,7 @@ const arrowKeyHander = (key) => {
 
 function dealWithKeyboard(event) {
 	arrowKeyHander(event.key);
-}
+} 
 
 function buildMatrix_addId() {
 	const playground = document.querySelector(".playground > ul");
@@ -771,7 +772,7 @@ function buildNextBlockBox() {
 }
 
 function makeRandomNumRange0_6() {
-	return Math.floor(Math.random() * BLOCK_TYPE_NUMBER) + 6;
+	return Math.floor(Math.random() * BLOCK_TYPE_NUMBER);
 }
 // 0: 막대기, 1: 사각형, 2: z , 3: s, 4: J, 5: L, 6: T
 function selectBlockStartCol() {
@@ -919,11 +920,9 @@ const resetBlock = function(idx) {
 const deletePrevPos = function() {
 	const blockObj 			= currentBlock.block;
 	const coloredBlocks 	= blockObj.coloredBlock;
-	console.log(coloredBlocks);
 	coloredBlocks.forEach( coords => {
 		const row = coords.row;
 		const col = coords.col;
-		console.log(row, col);
 		const tmp = document.getElementById(`${row}-${col}`);
 		tmp.style.backgroundColor = "white";
 		tmp.style.outline = "1px solid #ccc";
