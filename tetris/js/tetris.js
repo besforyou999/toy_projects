@@ -9,6 +9,7 @@ const NEXT_BOX_WIDTH = 5;
 const NEXT_BOX_HEIGHT = 6;
 const NEXT_BLOCK_HEADER = "next-block-";
 let   BLOCKDROPSPEED = 1000;
+let   SCORE = 10;
 
 const create2DArray = (rows, columns) => {
 	let arr = new Array(rows);
@@ -640,10 +641,59 @@ const arrowKeyHander = (key) => {
 	printCurrentBlockOnGraph();
 }
 
+const findBottomBlocks = () => {
+	const bottomBlock = [];
+	const blockObj 			= currentBlock.block;
+	const coloredBlocks 	= blockObj.coloredBlock;
+	
+	let deepestRow = -10;
+	coloredBlocks.forEach( coords => {
+		const row = coords.row;
+		if (deepestRow < row) deepestRow = row;
+	});
+
+	coloredBlocks.forEach( coords => {
+		const row = coords.row;
+		if (row == deepestRow) bottomBlock.push(coords);
+	});
+
+	return bottomBlock;
+}
+
+const findDepthToFall = (bottomBlocks) => {
+	let result = 100;
+	bottomBlocks.forEach( coord => {
+		let row = coord.row;
+		const col = coord.col;
+		let depth = 0;
+		while (row <= HEIGHT - UNSEENAREA_TOP - 1) {
+			if (block_occupied[row + 1][col] == false) {
+				depth += 1;
+			}
+			row += 1;
+		}
+		result = Math.min(result, depth);
+	});
+	return result;
+}
+
+const spacebarHander = () => {
+	
+	const bottomBlocks = findBottomBlocks();
+	const depthToFall = findDepthToFall(bottomBlocks);
+	deletePrevPos();
+	moveBlockCoordsDown(depthToFall);
+	printCurrentBlockOnGraph();
+}
+
 function dealWithKeyboard(event) {
-	if (event.key == "ArrowLeft" || event.key == "ArrowRight"
-		|| event.key == "ArrowDown" || event.key == "ArrowUp")
-			arrowKeyHander(event.key);
+	const key = event.key;
+	if (key == "ArrowLeft" || key == "ArrowRight"
+		|| key == "ArrowDown" || key == "ArrowUp")
+			arrowKeyHander(key);
+	if (key == " ") {
+		spacebarHander();
+	}
 } 
 
 function buildMatrix_addId() {
@@ -847,12 +897,12 @@ const deletePrevPos = function() {
 	})
 }
 
-const moveBlockCoordsDown = function() {
+const moveBlockCoordsDown = function(depth) {
 	const blockObj 			= currentBlock.block;
 	const blocks			= blockObj.block;
 	blocks.forEach( ele => { 
 		ele.forEach( coord => {
-			coord.row += 1;
+			coord.row += depth;
 		})
 	});
 }
@@ -861,7 +911,7 @@ const dropBlock = function() {
 	// 1. 이전 위치 일괄 제거
 	deletePrevPos();
 	// 2. 이동
-	moveBlockCoordsDown();
+	moveBlockCoordsDown(1);
 	// 3. 현재 블록 그래프에 그리기
 	printCurrentBlockOnGraph();
 }
@@ -1016,7 +1066,6 @@ const deleteFullRow = () => {
 	return clearedRowNumber;
 }
 
-
 const pullDownGrayBlocks = (dropLength) => {
 	for (let row = HEIGHT - UNSEENAREA_BOTTOM - 1 - dropLength; row >= UNSEENAREA_BOTTOM + 1; row--) {
 		for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
@@ -1028,9 +1077,9 @@ const pullDownGrayBlocks = (dropLength) => {
 	}
 }
 
-const changeScore = (deletedRowNumber) => {
-	const title = document.querySelector('.score')
-	title.text = String(deletedRowNumber);
+const changeScore = () => {
+	const title = document.querySelector('.score > p');
+	title.innerText = String(SCORE);
 }
 
 const intervalTasks = function() {
@@ -1039,7 +1088,8 @@ const intervalTasks = function() {
 		const deletedRowNumber = deleteFullRow();
 		if (deletedRowNumber > 0) {
 			pullDownGrayBlocks(deletedRowNumber);
-			changeScore(deletedRowNumber);
+			SCORE += deletedRowNumber;
+			changeScore(SCORE);
 		}
 		
 		switchNextBlockToCurblock();
@@ -1048,7 +1098,6 @@ const intervalTasks = function() {
 		printCurrentBlockOnGraph();
 	}
 	dropBlock();
-	
 }
 
 let block_occupied = initialize_matrix();
@@ -1078,6 +1127,7 @@ const blockDropIntervalId = setInterval(intervalTasks, BLOCKDROPSPEED);
 4. 블록 회전					- *
 5. 블록 프로토타입 구현			   - *
 6. 키보드 입력에 따라 블록 이동	     - *
-7. 블록 바닥에 닿을시 쌓아놓기
-8. 넥스트 블록 -> 현재 블록, 새로운 넥스트 블록
+7. 블록 바닥에 닿을시 쌓아놓기		 - *
+8. 넥스트 블록 -> 현재 블록, 새로운 넥스트 블록 - *
+9. 스페이스바 기능
 */
