@@ -45,15 +45,105 @@ class Block {
 		this.blockDir = 0;
 		this.block;
 		this.coloredBlock;
+		this.blockBoxWidth = 3;
 	}
+
+	moveLeft() {
+		// check validity
+		if (this.block[0][0].col == 0) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col <= UNSEENAREA_SIDE) return;
+		}
+		for (let i = 0 ; i < 3 ; i++) {
+			this.block[i][0].col -= 1;
+			this.block[i][1].col -= 1;
+			this.block[i][2].col -= 1;
+		}
+	}
+
+	moveRight() {
+		// check validity
+		if (this.block[0][2].col == WIDTH - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
+		}
+		for (let i = 0 ; i < 3 ; i++) {
+			this.block[i][0].col += 1;
+			this.block[i][1].col += 1;
+			this.block[i][2].col += 1;
+		}
+	}
+
+	moveDown() {
+		// check validity
+		if (this.block[2][0].row == HEIGHT - 1) return;
+		for (let i = 0 ; i < 4 ; i++) {
+			let coord = this.coloredBlock[i];
+			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
+		}
+		for (let i = 0 ; i < 3 ; i++) {
+			this.block[i][0].row += 1;
+			this.block[i][1].row += 1;
+			this.block[i][2].row += 1;
+		}
+	}
+
+	boxShadedLengthAtSides() {
+		// left
+		if (this.block[0][0].col <= UNSEENAREA_SIDE){
+			return UNSEENAREA_SIDE - this.block[0][0].col;
+		} 
+		// right
+		if (this.block[0][this.blockBoxWidth - 1].col >= WIDTH - UNSEENAREA_SIDE - 1) { 
+			return WIDTH - UNSEENAREA_SIDE - 1 - this.block[0][this.blockBoxWidth - 1].col;
+		}
+		return;
+	}
+
+	boxShadedLengthAtBelow() {
+		// below
+		if (this.block[this.blockBoxWidth - 1][0].row >= HEIGHT - UNSEENAREA_BOTTOM - 1) {
+			return this.block[this.blockBoxWidth - 1][0].row - (HEIGHT - UNSEENAREA_BOTTOM - 1);
+		}
+		return;
+	}
+
+	moveBlocksCol(overed) {
+		this.block.forEach( ele => {
+			ele.forEach( coord => {
+				coord.col += overed;
+			})
+		})
+	}
+
+	moveBlocksRow(overed) {
+		this.block.forEach( ele => {
+			ele.forEach( coord => {
+				coord.row -= overed;
+			})
+		})
+	}
+
+	moveBlocksBeforeSpin() {
+		const overedSide = this.boxShadedLengthAtSides();
+		if (overedSide)
+			this.moveBlocksCol(overedSide);
+		const overedBelow = this.boxShadedLengthAtBelow();
+		if (overedBelow)
+			this.moveBlocksRow(overedBelow);
+	}
+
 }
 
 class IBlock extends Block {
-	block = create2DArray(4, 4);
-	coloredBlock = new Array(4);
-	blockDir = 0;
 	constructor(startCol) {
 		super();
+		this.block = create2DArray(4, 4);
+		this.coloredBlock = new Array(4);
+		this.blockDir = 0;
+		this.blockBoxWidth = 4;
 		for (let i = 0 ; i < 4 ; i++) {
 			this.block[i][0] = new Coordinate(i, startCol - 1);
 			this.block[i][1] = new Coordinate(i, startCol);
@@ -64,8 +154,9 @@ class IBlock extends Block {
 	}
 	
 	spinDir() {
-		blockDir = blockDir + 1 > 3 ? 0 : blockDir + 1;
-		switch(blockDir) {
+		this.moveBlocksBeforeSpin();
+		this.blockDir = this.blockDir + 1 > 3 ? 0 : this.blockDir + 1;
+		switch(this.blockDir) {
 			case 0: {
 				this.coloredBlock[0] = this.block[0][1];
 				this.coloredBlock[1] = this.block[1][1];
@@ -95,6 +186,7 @@ class IBlock extends Block {
 				break;
 			}
 		}
+
 	}
 
 	moveLeft() {
@@ -145,12 +237,13 @@ class IBlock extends Block {
 	}
 }
 
-class OBlock {
+class OBlock extends Block {
 	block = create2DArray(2, 2);
 	coloredBlock = new Array(4);
 	blockDir = 0;
 	startingRow = 2;
 	constructor(startCol) {
+		super();
 		this.block[0][0] = this.coloredBlock[0] = new Coordinate(this.startingRow, startCol);
 		this.block[0][1] = this.coloredBlock[1] = new Coordinate(this.startingRow, startCol + 1);
 		this.block[1][0] = this.coloredBlock[2] = new Coordinate(this.startingRow + 1, startCol);
@@ -187,11 +280,12 @@ class OBlock {
 	}
 }
 
-class ZBlock {
-	block = create2DArray(3, 3);
-	coloredBlock = new Array(4);
-	blockDir = 0;
+class ZBlock extends Block {
 	constructor(startCol) {
+		super();
+		this.block = create2DArray(3, 3);
+		this.coloredBlock = new Array(4);
+		this.blockDir = 0;
 		for (let i = 1 ; i <= 3 ; i++) {
 			this.block[i - 1][0] = new Coordinate(i, startCol - 1);
 			this.block[i - 1][1] = new Coordinate(i, startCol);
@@ -204,8 +298,9 @@ class ZBlock {
 	}
 	
 	spinDir() {
-		blockDir = blockDir + 1 > 3 ? 0 : blockDir + 1;
-		switch(blockDir) {
+		this.moveBlocksBeforeSpin();
+		this.blockDir = this.blockDir + 1 > 3 ? 0 : this.blockDir + 1;
+		switch(this.blockDir) {
 			case 0: {
 				this.coloredBlock[0] = this.block[1][0];
 				this.coloredBlock[1] = this.block[1][1];
@@ -228,68 +323,26 @@ class ZBlock {
 				break;
 			} 
 			case 3: {
-				this.coloredBlock[0] = this.block[0][1];
-				this.coloredBlock[1] = this.block[1][1];
-				this.coloredBlock[2] = this.block[1][0];
-				this.coloredBlock[3] = this.block[2][0];
+				this.coloredBlock[0] = this.block[0][2];
+				this.coloredBlock[1] = this.block[1][2];
+				this.coloredBlock[2] = this.block[1][1];
+				this.coloredBlock[3] = this.block[2][1];
 				break;
 			}
 		}
 	}
-
-	moveLeft() {
-		// check validity
-		if (this.block[0][0].col == 0) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col <= UNSEENAREA_SIDE) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col -= 1;
-			this.block[i][1].col -= 1;
-			this.block[i][2].col -= 1;
-		}
-	}
-
-	moveRight() {
-		// check validity
-		if (this.block[0][2].col == WIDTH - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col += 1;
-			this.block[i][1].col += 1;
-			this.block[i][2].col += 1;
-		}
-	}
-
-	moveDown() {
-		// check validity
-		if (this.block[2][0].row == HEIGHT - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].row += 1;
-			this.block[i][1].row += 1;
-			this.block[i][2].row += 1;
-		}
-	}
 }
 
-class SBlock {
-	block = create2DArray(3, 3);
-	coloredBlock = new Array(4);
-	blockDir = 0;
-	startingRow = 2;
+class SBlock extends Block {
 	constructor(startCol) {
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0] = new Coordinate(i, startCol - 1);
-			this.block[i][1] = new Coordinate(i, startCol);
-			this.block[i][2] = new Coordinate(i, startCol + 1);
+		super();
+		this.block = create2DArray(3, 3);
+		this.coloredBlock = new Array(4);
+		this.blockDir = 0;
+		for (let i = 1 ; i <= 3 ; i++) {
+			this.block[i - 1][0] = new Coordinate(i, startCol - 1);
+			this.block[i - 1][1] = new Coordinate(i, startCol);
+			this.block[i - 1][2] = new Coordinate(i, startCol + 1);
 		}
 		this.coloredBlock[0] = this.block[2][0];
 		this.coloredBlock[1] = this.block[2][1];
@@ -298,8 +351,9 @@ class SBlock {
 	}
 	
 	spinDir() {
-		blockDir = blockDir + 1 > 3 ? 0 : blockDir + 1;
-		switch(blockDir) {
+		this.moveBlocksBeforeSpin();
+		this.blockDir = this.blockDir + 1 > 3 ? 0 : this.blockDir + 1;
+		switch(this.blockDir) {
 			case 0: {
 				this.coloredBlock[0] = this.block[2][0];
 				this.coloredBlock[1] = this.block[2][1];
@@ -315,75 +369,33 @@ class SBlock {
 				break;
 			} 
 			case 2: {
-				this.coloredBlock[0] = this.block[2][0];
-				this.coloredBlock[1] = this.block[2][1];
+				this.coloredBlock[0] = this.block[0][2];
+				this.coloredBlock[1] = this.block[0][1];
 				this.coloredBlock[2] = this.block[1][1];
-				this.coloredBlock[3] = this.block[1][2];
+				this.coloredBlock[3] = this.block[1][0];
 				break;
 			} 
 			case 3: {
-				this.coloredBlock[0] = this.block[0][0];
-				this.coloredBlock[1] = this.block[1][0];
-				this.coloredBlock[2] = this.block[1][1];
-				this.coloredBlock[3] = this.block[2][1];
+				this.coloredBlock[0] = this.block[0][1];
+				this.coloredBlock[1] = this.block[1][1];
+				this.coloredBlock[2] = this.block[1][2];
+				this.coloredBlock[3] = this.block[2][2];
 				break;
 			}
 		}
 	}
-
-	moveLeft() {
-		// check validity
-		if (this.block[0][0].col == 0) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col <= UNSEENAREA_SIDE) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col -= 1;
-			this.block[i][1].col -= 1;
-			this.block[i][2].col -= 1;
-		}
-	}
-
-	moveRight() {
-		// check validity
-		if (this.block[0][2].col == WIDTH - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col += 1;
-			this.block[i][1].col += 1;
-			this.block[i][2].col += 1;
-		}
-	}
-
-	moveDown() {
-		// check validity
-		if (this.block[2][0].row == HEIGHT - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].row += 1;
-			this.block[i][1].row += 1;
-			this.block[i][2].row += 1;
-		}
-	}
 }
 
-class JBlock {
-	block = create2DArray(3, 3);
-	coloredBlock = new Array(4);
-	blockDir = 0;
-	startingRow = 1;
+class JBlock extends Block {
 	constructor(startCol) {
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0] = new Coordinate(i, startCol - 1);
-			this.block[i][1] = new Coordinate(i, startCol);
-			this.block[i][2] = new Coordinate(i, startCol + 1);
+		super();
+		this.block = create2DArray(3, 3);
+		this.coloredBlock = new Array(4);
+		this.blockDir = 0;
+		for (let i = 1 ; i <= 3 ; i++) {
+			this.block[i - 1][0] = new Coordinate(i, startCol - 1);
+			this.block[i - 1][1] = new Coordinate(i, startCol);
+			this.block[i - 1][2] = new Coordinate(i, startCol + 1);
 		}
 		this.coloredBlock[0] = this.block[0][1];
 		this.coloredBlock[1] = this.block[1][1];
@@ -392,88 +404,48 @@ class JBlock {
 	}
 	
 	spinDir() {
-		blockDir = blockDir + 1 > 3 ? 0 : blockDir + 1;
-		switch(blockDir) {
+		this.moveBlocksBeforeSpin();
+		this.blockDir = this.blockDir + 1 > 3 ? 0 : this.blockDir + 1;
+		switch(this.blockDir) {
 			case 0: {
-				this.coloredBlock[0] = this.block[0][1];
-				this.coloredBlock[1] = this.block[1][1];
-				this.coloredBlock[2] = this.block[2][1];
-				this.coloredBlock[3] = this.block[2][0];
+				this.coloredBlock[0] = this.block[0][2];
+				this.coloredBlock[1] = this.block[1][2];
+				this.coloredBlock[2] = this.block[2][2];
+				this.coloredBlock[3] = this.block[2][1];
 				break;
 			}
 			case 1: {
-				this.coloredBlock[0] = this.block[0][0];
-				this.coloredBlock[1] = this.block[1][0];
-				this.coloredBlock[2] = this.block[1][1];
-				this.coloredBlock[3] = this.block[1][2];
+				this.coloredBlock[0] = this.block[1][0];
+				this.coloredBlock[1] = this.block[2][0];
+				this.coloredBlock[2] = this.block[2][1];
+				this.coloredBlock[3] = this.block[2][2];
 				break;
 			} 
 			case 2: {
-				this.coloredBlock[0] = this.block[0][2];
-				this.coloredBlock[1] = this.block[0][1];
-				this.coloredBlock[2] = this.block[1][1];
-				this.coloredBlock[3] = this.block[2][1];
+				this.coloredBlock[0] = this.block[2][0];
+				this.coloredBlock[1] = this.block[1][0];
+				this.coloredBlock[2] = this.block[0][0];
+				this.coloredBlock[3] = this.block[0][1];
 				break;
 			} 
 			case 3: {
-				this.coloredBlock[0] = this.block[1][0];
-				this.coloredBlock[1] = this.block[1][1];
-				this.coloredBlock[2] = this.block[1][2];
-				this.coloredBlock[3] = this.block[2][2];
+				this.coloredBlock[0] = this.block[0][0];
+				this.coloredBlock[1] = this.block[0][1];
+				this.coloredBlock[2] = this.block[0][2];
+				this.coloredBlock[3] = this.block[1][2];
 				break;
 			}
 		}
 	}
 
-	moveLeft() {
-		// check validity
-		if (this.block[0][0].col == 0) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col <= UNSEENAREA_SIDE) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col -= 1;
-			this.block[i][1].col -= 1;
-			this.block[i][2].col -= 1;
-		}
-	}
-
-	moveRight() {
-		// check validity
-		if (this.block[0][2].col == WIDTH - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col += 1;
-			this.block[i][1].col += 1;
-			this.block[i][2].col += 1;
-		}
-	}
-
-	moveDown() {
-		// check validity
-		if (this.block[2][0].row == HEIGHT - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].row += 1;
-			this.block[i][1].row += 1;
-			this.block[i][2].row += 1;
-		}
-	}
 }
 
-class LBlock {
-	block = create2DArray(3, 3);
-	coloredBlock = new Array(4);
-	blockDir = 0;
-	startingRow = 1;
+class LBlock extends Block {
 	constructor(startCol) {
+		super();
+		this.block = create2DArray(3, 3);
+		this.coloredBlock = new Array(4);
+		this.blockDir = 0;
 		for (let i = 1 ; i <= 3 ; i++) {
 			this.block[i - 1][0] = new Coordinate(i, startCol - 1);
 			this.block[i - 1][1] = new Coordinate(i, startCol);
@@ -486,92 +458,51 @@ class LBlock {
 	}
 	
 	spinDir() {
-		blockDir = blockDir + 1 > 3 ? 0 : blockDir + 1;
-		switch(blockDir) {
+		this.moveBlocksBeforeSpin();
+		this.blockDir = this.blockDir + 1 > 3 ? 0 : this.blockDir + 1;
+		switch(this.blockDir) {
 			case 0: {
-				this.coloredBlock[0] = this.block[0][1];
-				this.coloredBlock[1] = this.block[1][1];
-				this.coloredBlock[2] = this.block[2][1];
-				this.coloredBlock[3] = this.block[2][2];
+				this.coloredBlock[0] = this.block[0][0];
+				this.coloredBlock[1] = this.block[1][0];
+				this.coloredBlock[2] = this.block[2][0];
+				this.coloredBlock[3] = this.block[2][1];
 				break;
 			}
 			case 1: {
-				this.coloredBlock[0] = this.block[2][0];
-				this.coloredBlock[1] = this.block[1][0];
-				this.coloredBlock[2] = this.block[1][1];
-				this.coloredBlock[3] = this.block[1][2];
+				this.coloredBlock[0] = this.block[1][0];
+				this.coloredBlock[1] = this.block[0][0];
+				this.coloredBlock[2] = this.block[0][1];
+				this.coloredBlock[3] = this.block[0][2];
 				break;
 			} 
 			case 2: {
-				this.coloredBlock[0] = this.block[0][0];
-				this.coloredBlock[1] = this.block[0][1];
-				this.coloredBlock[2] = this.block[1][1];
-				this.coloredBlock[3] = this.block[2][1];
+				this.coloredBlock[0] = this.block[0][1];
+				this.coloredBlock[1] = this.block[0][2];
+				this.coloredBlock[2] = this.block[1][2];
+				this.coloredBlock[3] = this.block[2][2];
 				break;
 			} 
 			case 3: {
-				this.coloredBlock[0] = this.block[1][0];
-				this.coloredBlock[1] = this.block[1][1];
-				this.coloredBlock[2] = this.block[1][2];
-				this.coloredBlock[3] = this.block[2][0];
+				this.coloredBlock[0] = this.block[2][0];
+				this.coloredBlock[1] = this.block[2][1];
+				this.coloredBlock[2] = this.block[2][2];
+				this.coloredBlock[3] = this.block[1][2];
 				break;
 			}
-		}
-	}
-
-	moveLeft() {
-		// check validity
-		if (this.block[0][0].col == 0) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col <= UNSEENAREA_SIDE) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col -= 1;
-			this.block[i][1].col -= 1;
-			this.block[i][2].col -= 1;
-		}
-	}
-
-	moveRight() {
-		// check validity
-		if (this.block[0][2].col == WIDTH - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col += 1;
-			this.block[i][1].col += 1;
-			this.block[i][2].col += 1;
-		}
-	}
-
-	moveDown() {
-		// check validity
-		if (this.block[2][0].row == HEIGHT - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].row += 1;
-			this.block[i][1].row += 1;
-			this.block[i][2].row += 1;
 		}
 	}
 }
 
-class TBlock {
-	block = create2DArray(3, 3);
-	coloredBlock = new Array(4);
-	blockDir = 0;
-	startingRow = 2;
+class TBlock extends Block {
 	constructor(startCol) {
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0] = new Coordinate(i, startCol - 1);
-			this.block[i][1] = new Coordinate(i, startCol);
-			this.block[i][2] = new Coordinate(i, startCol + 1);
+		super();
+		this.block = create2DArray(3, 3);
+		this.coloredBlock = new Array(4);
+		this.blockDir = 0;
+		for (let i = 1 ; i <= 3 ; i++) {
+			this.block[i - 1][0] = new Coordinate(i, startCol - 1);
+			this.block[i - 1][1] = new Coordinate(i, startCol);
+			this.block[i - 1][2] = new Coordinate(i, startCol + 1);
 		}
 		this.coloredBlock[0] = this.block[1][0];
 		this.coloredBlock[1] = this.block[1][1];
@@ -580,8 +511,9 @@ class TBlock {
 	}
 	
 	spinDir() {
-		blockDir = blockDir + 1 > 3 ? 0 : blockDir + 1;
-		switch(blockDir) {
+		this.moveBlocksBeforeSpin();
+		this.blockDir = this.blockDir + 1 > 3 ? 0 : this.blockDir + 1;
+		switch(this.blockDir) {
 			case 0: {
 				this.coloredBlock[0] = this.block[1][0];
 				this.coloredBlock[1] = this.block[1][1];
@@ -612,55 +544,9 @@ class TBlock {
 			}
 		}
 	}
-
-	moveLeft() {
-		// check validity
-		if (this.block[0][0].col == 0) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col <= UNSEENAREA_SIDE) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col -= 1;
-			this.block[i][1].col -= 1;
-			this.block[i][2].col -= 1;
-		}
-	}
-
-	moveRight() {
-		// check validity
-		if (this.block[0][2].col == WIDTH - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.col == WIDTH - UNSEENAREA_SIDE - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].col += 1;
-			this.block[i][1].col += 1;
-			this.block[i][2].col += 1;
-		}
-	}
-
-	moveDown() {
-		// check validity
-		if (this.block[2][0].row == HEIGHT - 1) return;
-		for (let i = 0 ; i < 4 ; i++) {
-			let coord = this.coloredBlock[i];
-			if (coord.row >= HEIGHT - UNSEENAREA_BOTTOM - 1) return;
-		}
-		for (let i = 0 ; i < 3 ; i++) {
-			this.block[i][0].row += 1;
-			this.block[i][1].row += 1;
-			this.block[i][2].row += 1;
-		}
-	}
 }
 
 class CurrentBlock {
-	block;
-	blockType = -1;
-	blockSpinDirection = 0;
-	backgroundColor = "undefined";
 	constructor(blockType, blockCol) {
 		this.blockType = blockType;
 		switch(blockType) {
@@ -719,6 +605,10 @@ const arrowKeyHander = (key) => {
 			blockObj.moveDown();
 			break;
 		}
+		case "ArrowUp": {
+			blockObj.spinDir();
+			break;
+		}
 	}
 	printCurrentBlockOnGraph();
 }
@@ -772,7 +662,7 @@ function buildNextBlockBox() {
 }
 
 function makeRandomNumRange0_6() {
-	return Math.floor(Math.random() * BLOCK_TYPE_NUMBER);
+	return Math.floor(Math.random() * BLOCK_TYPE_NUMBER) + 6;
 }
 // 0: 막대기, 1: 사각형, 2: z , 3: s, 4: J, 5: L, 6: T
 function selectBlockStartCol() {
@@ -930,7 +820,7 @@ const deletePrevPos = function() {
 	})
 }
 
-const moveBlockCoords = function() {
+const moveBlockCoordsDown = function() {
 	const blockObj 			= currentBlock.block;
 	const blocks			= blockObj.block;
 	blocks.forEach( ele => { 
@@ -944,7 +834,7 @@ const dropBlock = function() {
 	// 1. 이전 위치 일괄 제거
 	deletePrevPos();
 	// 2. 이동
-	moveBlockCoords();
+	moveBlockCoordsDown();
 	// 3. 현재 블록 그래프에 그리기
 	printCurrentBlockOnGraph();
 }
