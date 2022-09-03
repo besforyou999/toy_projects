@@ -709,7 +709,12 @@ function buildMatrix_addId() {
 			matrix.id = `${i}-${j}`;
 			if (j >= UNSEENAREA_SIDE && j < WIDTH - UNSEENAREA_SIDE) {
 				if (i >= UNSEENAREA_TOP && i < HEIGHT - UNSEENAREA_BOTTOM) {
-					matrix.style.outline = "1px solid #ccc";
+					let style_for_mat = "box-shadow: 0 -1px 0 #ccc, 1px 0 0 #ccc";
+					if (j == UNSEENAREA_SIDE)
+						style_for_mat += ",  -1px 0 0 #ccc";
+					if (i == HEIGHT - UNSEENAREA_BOTTOM - 1)
+						style_for_mat += ", 0 1px 0 #ccc";
+					matrix.style = style_for_mat;
 				}
 			}
 			ul.append(matrix);
@@ -1097,7 +1102,6 @@ const updateScore = () => {
 	}
 }
 
-
 const changeScoreText = () => {
 	const title = document.querySelector('.score > p');
 	title.innerText = String(SCORE);
@@ -1126,9 +1130,7 @@ let nextBlockType = makeRandomNumRange0_6();
 document.addEventListener("keydown", dealWithKeyboard, false);
 
 printNextBlock();
-
 printCurrentBlockOnGraph();
-
 let blockDropIntervalId = setInterval(intervalTasks, BLOCK_DROP_SPEED);
 
 
