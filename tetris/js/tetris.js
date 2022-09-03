@@ -8,7 +8,7 @@ const GAME_END = false;
 const NEXT_BOX_WIDTH = 5;
 const NEXT_BOX_HEIGHT = 6;
 const NEXT_BLOCK_HEADER = "next-block-";
-const BLOCK_DROP_SPEED = 1000;
+const BLOCK_DROP_SPEED = 500;
 let   SCORE = 0;
 
 const create2DArray = (rows, columns) => {
@@ -866,7 +866,7 @@ function printJBlock() {
 }
 
 function printLBlock() {
-	const block1 = document.getElementById("next-block-11");
+	const block1 = document.getElementById("next-block-7");
 	block1.style.backgroundColor = "orange";
 	const block2 = document.getElementById("next-block-12");
 	block2.style.backgroundColor = "orange";
@@ -895,7 +895,6 @@ const deletePrevPos = function() {
 		const col = coords.col;
 		const tmp = document.getElementById(`${row}-${col}`);
 		tmp.style.backgroundColor = "white";
-		//tmp.style.outline = "1px solid #ccc";
 		block_occupied[row][col] = false;
 	})
 }
@@ -1031,6 +1030,14 @@ const occupyBlock = (row, col) => {
 	const mat = document.getElementById(`${row}-${col}`);
 	mat.style.backgroundColor = "gray";
 	block_occupied[row][col] = true;
+}
+
+const sleep = (num) => {
+	let now = new Date();
+	let stop = now.getTime() + num;
+	while (now.getTime() < stop) {
+		now = new Date();
+	}
 }
 
 const clearRow = (rowNumber) => {
