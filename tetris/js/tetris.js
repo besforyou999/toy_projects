@@ -9,7 +9,7 @@ const NEXT_BOX_WIDTH = 5;
 const NEXT_BOX_HEIGHT = 6;
 const NEXT_BLOCK_HEADER = "next-block-";
 const BLOCK_DROP_SPEED = 1000;
-let   SCORE = 10;
+let   SCORE = 0;
 
 const create2DArray = (rows, columns) => {
 	let arr = new Array(rows);
@@ -895,7 +895,7 @@ const deletePrevPos = function() {
 		const col = coords.col;
 		const tmp = document.getElementById(`${row}-${col}`);
 		tmp.style.backgroundColor = "white";
-		tmp.style.outline = "1px solid #ccc";
+		//tmp.style.outline = "1px solid #ccc";
 		block_occupied[row][col] = false;
 	})
 }
@@ -925,6 +925,7 @@ const printCurrentBlockOnGraph = () => {
 	const coloredBlocks 	= blockObj.coloredBlock;
 	coloredBlocks.forEach( coords => {
 		const row = coords.row;
+		if (row <= UNSEENAREA_BOTTOM) return;
 		const col = coords.col;
 		const tmp = document.getElementById(`${row}-${col}`);
 		tmp.style.backgroundColor = backgroundColor;
@@ -1085,12 +1086,12 @@ const updateScore = () => {
 	if (deletedRowNumber > 0) {
 		pullDownGrayBlocks(deletedRowNumber);
 		SCORE += deletedRowNumber;
-		changeScoreText(SCORE);
+		changeScoreText();
 	}
 }
 
 
-const changeScoreText = (deletedRowNumber) => {
+const changeScoreText = () => {
 	const title = document.querySelector('.score > p');
 	title.innerText = String(SCORE);
 }
@@ -1136,5 +1137,5 @@ let blockDropIntervalId = setInterval(intervalTasks, BLOCK_DROP_SPEED);
 6. 키보드 입력에 따라 블록 이동	     - *
 7. 블록 바닥에 닿을시 쌓아놓기		 - *
 8. 넥스트 블록 -> 현재 블록, 새로운 넥스트 블록 - *
-9. 스페이스바 기능
+9. 스페이스바 기능				  - *
 */
