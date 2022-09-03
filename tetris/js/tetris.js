@@ -641,28 +641,12 @@ const arrowKeyHander = (key) => {
 	printCurrentBlockOnGraph();
 }
 
-const findBottomBlocks = () => {
-	const bottomBlock = [];
+const findDepthToFall = () => {
+	let result = 100;
 	const blockObj 			= currentBlock.block;
 	const coloredBlocks 	= blockObj.coloredBlock;
-	
-	let deepestRow = -10;
-	coloredBlocks.forEach( coords => {
-		const row = coords.row;
-		if (deepestRow < row) deepestRow = row;
-	});
 
-	coloredBlocks.forEach( coords => {
-		const row = coords.row;
-		if (row == deepestRow) bottomBlock.push(coords);
-	});
-
-	return bottomBlock;
-}
-
-const findDepthToFall = (bottomBlocks) => {
-	let result = 100;
-	bottomBlocks.forEach( coord => {
+	coloredBlocks.forEach( coord => {
 		let row = coord.row;
 		const col = coord.col;
 		let depth = 0;
@@ -678,8 +662,7 @@ const findDepthToFall = (bottomBlocks) => {
 }
 
 const spacebarHander = () => {
-	const bottomBlocks = findBottomBlocks();
-	const depthToFall = findDepthToFall(bottomBlocks);
+	const depthToFall = findDepthToFall();
 	deletePrevPos();
 	moveBlockCoordsDown(depthToFall);
 	printCurrentBlockOnGraph();
@@ -1069,6 +1052,7 @@ const deleteFullRow = () => {
 	for (let row = HEIGHT - UNSEENAREA_BOTTOM - 1 ; row >= UNSEENAREA_BOTTOM + 1; row--) {
 		let rowFull = true;
 		for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
+			const b = document.getElementById(`${row}-${col}`)
 			if (block_occupied[row][col] == false) {
 				rowFull = false;
 				break;
