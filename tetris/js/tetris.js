@@ -8,7 +8,7 @@ const GAME_END = false;
 const NEXT_BOX_WIDTH = 5;
 const NEXT_BOX_HEIGHT = 6;
 const NEXT_BLOCK_HEADER = "next-block-";
-const BLOCK_DROP_SPEED = 500;
+const BLOCK_DROP_SPEED = 300;
 let   SCORE = 0;
 
 const create2DArray = (rows, columns) => {
@@ -1107,9 +1107,29 @@ const changeScoreText = () => {
 	title.innerText = String(SCORE);
 }
 
+const GameOver = () => {
+	for (let i = 0 ; i < HEIGHT - UNSEENAREA_BOTTOM ; i++) {
+		for (let j = UNSEENAREA_SIDE ; j < WIDTH - UNSEENAREA_SIDE ; j++) {
+			const b = document.getElementById(`${i}-${j}`);
+			const bgColor = b.style.backgroundColor;
+			if (bgColor == "gray") {
+				if (i <= UNSEENAREA_BOTTOM) {
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
+
 const intervalTasks = function() {
 	if (cannot_go_down_more()) {
 		currentBlock.block.changeBackgroundColor('gray');
+		if (GameOver()) {
+			clearInterval(blockDropIntervalId);
+			alert("Game over");
+			return;
+		}
 		updateScore();
 		switchNextBlockToCurblock();
 		clearNextBox();
