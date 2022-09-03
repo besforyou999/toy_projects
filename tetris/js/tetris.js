@@ -8,7 +8,8 @@ const GAME_END = false;
 const NEXT_BOX_WIDTH = 5;
 const NEXT_BOX_HEIGHT = 6;
 const NEXT_BLOCK_HEADER = "next-block-";
-const BLOCK_DROP_SPEED = 80;
+const BLOCK_DROP_SPEED = 300;
+const BGM_LIST_LEN = 4;
 let   SCORE = 0;
 
 const create2DArray = (rows, columns) => {
@@ -29,6 +30,53 @@ const initialize_matrix = () => {
 		block_occupied[i] = temp;
 	}
 	return block_occupied;
+}
+
+function resetBlockOccupied () {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			for (let i = 0 ; i < HEIGHT ; i++) {
+				for (let j = 0 ; j < WIDTH ; j++) {
+					block_occupied[i][j] = false;
+				}
+			}
+		}, 300);
+	});
+}
+
+
+class BGM {
+	constructor() {
+		this.playlist = ['./resources/Bradinsky.mp3', './resources/Troika.mp3', './resources/Loginska.mp3', './resources/Kalinka.mp3'];
+		this.volume = 0.3;
+		this.bgmIdx = 0;
+		this.audio = new Audio(this.playlist[this.bgmIdx]);
+		this.audio.autoplay = false;
+	}
+
+	PlayBGM() {
+		this.audio.muted = true;
+		this.audio.play();
+		this.audio.muted = false;
+	}
+
+	playNextMusic() {
+		this.audio.pause();
+		this.bgmIdx = this.bgmIdx + 1 == BGM_LIST_LEN ? 0 : this.bgmIdx + 1;
+		this.audio = new Audio(this.playlist[this.bgmIdx]);
+		this.PlayBGM();
+	}
+
+	pauseMusic() {
+		this.audio.pause();
+	}
+
+	pickNextMusicRandomly() {
+		this.bgmIdx = Math.floor(Math.random() * BGM_LIST_LEN);
+		this.audio = new Audio(this.playlist[this.bgmIdx]);
+		this.PlayBGM();
+	}
+
 }
 
 class Coordinate {
@@ -697,9 +745,23 @@ function dealWithKeyboard(event) {
 	}
 } 
 
+function resetMatrix() { 
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			for (let row =0; row < HEIGHT; row++) {
+				for(let col = 0; col < WIDTH ; col++) {
+					const d = document.getElementById(`${row}-${col}`);
+					d.style.backgroundColor = "white";
+				}
+			}
+			resolve();
+		}, 1000);
+	});
+}
+
 function buildMatrix_addId() {
 	const playground = document.querySelector(".playground > ul");
-	for (let i = 0 ; i < HEIGHT + UNSEENAREA_BOTTOM ; i++) {
+	for (let i = 0 ; i < HEIGHT; i++) {
 		const li = document.createElement("li");
 		const ul = document.createElement("ul");
 		for (let j = 0 ; j < WIDTH ; j++) {
@@ -1043,6 +1105,12 @@ const sleep = (num) => {
 	}
 }
 
+const occupyRow = (rowNumber) => {
+	for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
+		occupyBlock(rowNumber, col);
+	}
+}
+
 const clearRow = (rowNumber) => {
 	for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
 		deleteBlock(rowNumber, col);
@@ -1063,40 +1131,79 @@ const switchNextBlockToCurblock = () => {
 }
 
 const deleteFullRow = () => {
-	let clearedRowNumber = 0;
+	let rowStatus = [];
+	let rowClearingNeeded = false;
+	let rowsToClear = 0;
 	for (let row = HEIGHT - UNSEENAREA_BOTTOM - 1 ; row >= UNSEENAREA_BOTTOM + 1; row--) {
-		let rowFull = true;
+		let occupiedBlocks = 0;
 		for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
 			const b = document.getElementById(`${row}-${col}`)
-			if (block_occupied[row][col] == false) {
-				rowFull = false;
-				break;
+			if (block_occupied[row][col]) {
+				occupiedBlocks += 1;
 			}
 		}
-		if (rowFull) {
-			clearRow(row);
-			clearedRowNumber += 1;
-		}
+		if (occupiedBlocks == 12) {
+			rowStatus.push(0);
+			rowClearingNeeded = true;
+			rowsToClear += 1;
+		} else if (occupiedBlocks >= 1 && occupiedBlocks < 12) {
+			rowStatus.push(1);
+		} 
 	}
-	return clearedRowNumber;
+	return {rowStatus, rowClearingNeeded, rowsToClear};
 }
 
-const pullDownGrayBlocks = (dropLength) => {
-	for (let row = HEIGHT - UNSEENAREA_BOTTOM - 1 - dropLength; row >= UNSEENAREA_BOTTOM + 1; row--) {
-		for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
-			if (block_occupied[row][col] == true) {
-				deleteBlock(row, col);
-				occupyBlock(row + dropLength , col);
+const switchRowData = (row1, row2) => {
+	const BOTTOM_ROW = HEIGHT - UNSEENAREA_BOTTOM - 1;
+	row1 = BOTTOM_ROW - row1;
+	row2 = BOTTOM_ROW - row2;
+	for (let col = UNSEENAREA_SIDE ; col < WIDTH - UNSEENAREA_SIDE ; col++) {
+		const b1 = document.getElementById(`${row1}-${col}`);
+		const b2 = document.getElementById(`${row2}-${col}`);
+		const bgColor = b1.style.backgroundColor;
+		b1.style.backgroundColor = b2.style.backgroundColor;
+		b2.style.backgroundColor = bgColor;
+		const occupation1 = block_occupied[row1][col];
+		const occupation2 = block_occupied[row2][col];
+		block_occupied[row1][col] = occupation2;
+		block_occupied[row2][col] = occupation1;
+	}
+}
+
+// row == 0 -> clear needed row , row == 1 -> occupied row
+const pullDownGrayBlocks = (rowStatus) => {
+	let lp = 0;
+	const BOTTOM_ROW = HEIGHT - UNSEENAREA_BOTTOM - 1;
+	// clean full rows
+	while (lp < rowStatus.length) {
+		if (rowStatus[lp] == 0) {
+			clearRow(BOTTOM_ROW - lp);
+		} 
+		lp += 1;
+	}
+
+	// drop down unfull rows
+	lp = 1;
+	while (lp < rowStatus.length) {
+		if (rowStatus[lp] == 1) {
+			let dp = lp;
+			while (dp > 0) {
+				if (rowStatus[dp - 1] == 0) dp -= 1;
+				else if (rowStatus[dp - 1] == 1) break;
 			}
+			switchRowData(lp, dp);
+			rowStatus[lp] = 0;
+			rowStatus[dp] = 1;
 		}
+		lp += 1;
 	}
 }
 
 const updateScore = () => {
-	const deletedRowNumber = deleteFullRow();
-	if (deletedRowNumber > 0) {
-		pullDownGrayBlocks(deletedRowNumber);
-		SCORE += deletedRowNumber;
+	const rowStatObj = deleteFullRow();
+	if (rowStatObj.rowClearingNeeded) {
+		pullDownGrayBlocks(rowStatObj.rowStatus);
+		SCORE += rowStatObj.rowsToClear;
 		changeScoreText();
 	}
 }
@@ -1112,9 +1219,8 @@ const GameOver = () => {
 			const b = document.getElementById(`${i}-${j}`);
 			const bgColor = b.style.backgroundColor;
 			if (bgColor == "gray") {
-				if (i <= UNSEENAREA_BOTTOM) {
+				if (i <= UNSEENAREA_BOTTOM)
 					return true;
-				}
 			}
 		}
 	}
@@ -1132,32 +1238,69 @@ const intervalTasks = function() {
 	if (cannot_go_down_more()) {
 		stackCurrentBlockOnGraph();
 		if (GameOver()) {
-			clearInterval(blockDropIntervalId);
+			MusicPlayer.pauseMusic();
 			alert("Game over");
+			clearInterval(blockDropIntervalId);
 			return;
-		}
+		} 
 		updateScore();
 		switchNextBlockToCurblock();
 		clearNextBox();
 		printNextBlock();
 		printCurrentBlockOnGraph();
+		
 	}
 	dropBlock();
 }
 
+const addPlayBtn = () => {
+	const container = document.createElement('div');
+	
+	const musicBtn = document.createElement('button');
+	const txtNodePlay = document.createTextNode('Play music');
+	musicBtn.append(txtNodePlay);
+
+	const nextMusicBtn = document.createElement('button');
+	const txtNodeNextMusic = document.createTextNode('Next Music');
+	nextMusicBtn.append(txtNodeNextMusic);
+
+	container.append(musicBtn);
+	container.append(nextMusicBtn);
+
+	const playground = document.querySelector('.nextBlockBox');
+	playground.append(container);
+
+	musicBtn.addEventListener("click", function() {
+		MusicPlayer.PlayBGM();
+	});
+
+	nextMusicBtn.addEventListener("click", function() {
+		MusicPlayer.playNextMusic();
+	});
+
+}
+
+
+const MusicPlayer = new BGM();
+document.addEventListener("keydown", dealWithKeyboard, false);
+MusicPlayer.audio.addEventListener('ended', function() {
+	MusicPlayer.playNextMusic();
+});
+
+addPlayBtn();
+
 let block_occupied = initialize_matrix();
 buildMatrix_addId();
 buildNextBlockBox();
-
 let currentBlockType = makeRandomNumRange0_6();
 let currentBlock = new CurrentBlock(currentBlockType, selectBlockStartCol());
 let nextBlockType = makeRandomNumRange0_6();
 
-document.addEventListener("keydown", dealWithKeyboard, false);
-
 printNextBlock();
 printCurrentBlockOnGraph();
+
 let blockDropIntervalId = setInterval(intervalTasks, BLOCK_DROP_SPEED);
+
 
 
 /*
