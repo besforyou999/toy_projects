@@ -8,7 +8,7 @@ const GAME_END = false;
 const NEXT_BOX_WIDTH = 5;
 const NEXT_BOX_HEIGHT = 6;
 const NEXT_BLOCK_HEADER = "next-block-";
-const BLOCK_DROP_SPEED = 300;
+const BLOCK_DROP_SPEED = 80;
 let   SCORE = 0;
 
 const create2DArray = (rows, columns) => {
@@ -641,18 +641,32 @@ const arrowKeyHander = (key) => {
 	printCurrentBlockOnGraph();
 }
 
-const findDepthToFall = () => {
-	let result = 100;
+const findBottomBlocks = () => {
+	const bottomBlock = [];
 	const blockObj 			= currentBlock.block;
 	const coloredBlocks 	= blockObj.coloredBlock;
+	
+	coloredBlocks.forEach( coords => {
+		const row = coords.row;
+		const col = coords.col;
+		if (block_occupied[row + 1][col] == false) {
+			bottomBlock.push(coords);
+		}
+	});
+	return bottomBlock;
+}
 
-	coloredBlocks.forEach( coord => {
+const findDepthToFall = (bottomBlocks) => {
+	let result = 100;
+	bottomBlocks.forEach( coord => {
 		let row = coord.row;
 		const col = coord.col;
 		let depth = 0;
 		while (row <= HEIGHT - UNSEENAREA_TOP - 1) {
 			if (block_occupied[row + 1][col] == false) {
 				depth += 1;
+			} else {
+				break;
 			}
 			row += 1;
 		}
@@ -662,7 +676,8 @@ const findDepthToFall = () => {
 }
 
 const spacebarHander = () => {
-	const depthToFall = findDepthToFall();
+	const bottomBlocks = findBottomBlocks();
+	const depthToFall = findDepthToFall(bottomBlocks);
 	deletePrevPos();
 	moveBlockCoordsDown(depthToFall);
 	printCurrentBlockOnGraph();
@@ -918,7 +933,7 @@ const printCurrentBlockOnGraph = () => {
 		tmp.style.backgroundColor = backgroundColor;
 		tmp.style.boxShadow = "0 -1px 0 #ccc, 1px 0 0 #ccc, -1px 0 0 #ccc";
 		block_occupied[row][col] = true;
-	})
+	});
 
 }
 
@@ -1106,9 +1121,16 @@ const GameOver = () => {
 	return false;
 }
 
+const stackCurrentBlockOnGraph = () => {
+	currentBlock.block.changeBackgroundColor('gray');
+	currentBlock.block.coloredBlock.forEach( coord => {
+		block_occupied[coord.row][coord.col] = true;
+	});
+}
+
 const intervalTasks = function() {
 	if (cannot_go_down_more()) {
-		currentBlock.block.changeBackgroundColor('gray');
+		stackCurrentBlockOnGraph();
 		if (GameOver()) {
 			clearInterval(blockDropIntervalId);
 			alert("Game over");
