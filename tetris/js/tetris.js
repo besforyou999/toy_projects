@@ -933,7 +933,7 @@ const printCurrentBlockOnGraph = () => {
 		const col = coords.col;
 		const tmp = document.getElementById(`${row}-${col}`);
 		tmp.style.backgroundColor = backgroundColor;
-		tmp.style.outline = "1px solid #ccc";
+		tmp.style.boxShadow = "0 -1px 0 #ccc, 1px 0 0 #ccc, -1px 0 0 #ccc";
 		block_occupied[row][col] = true;
 	})
 
