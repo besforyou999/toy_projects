@@ -759,6 +759,20 @@ function resetMatrix() {
 	});
 }
 
+const rebuildGraph = () => {
+	for (let i = 0 ; i < HEIGHT; i++) {
+		for (let j = 0 ; j < WIDTH ; j++) {
+			if (j >= UNSEENAREA_SIDE && j < WIDTH - UNSEENAREA_SIDE) {
+				if (i >= UNSEENAREA_TOP && i < HEIGHT - UNSEENAREA_BOTTOM) {
+					const matrix = document.getElementById(`${i}-${j}`);
+					const basicShadow = "-1px 1px 1 px 1px #ccc";
+					matrix.style.boxShadow = basicShadow;
+				}
+			}
+		}
+	}
+}
+
 function buildMatrix_addId() {
 	const playground = document.querySelector(".playground > ul");
 	for (let i = 0 ; i < HEIGHT; i++) {
@@ -1246,8 +1260,10 @@ const intervalTasks = function() {
 		updateScore();
 		switchNextBlockToCurblock();
 		clearNextBox();
+		rebuildGraph();
 		printNextBlock();
 		printCurrentBlockOnGraph();
+
 		
 	}
 	dropBlock();
@@ -1316,4 +1332,5 @@ let blockDropIntervalId = setInterval(intervalTasks, BLOCK_DROP_SPEED);
 7. 블록 바닥에 닿을시 쌓아놓기		 - *
 8. 넥스트 블록 -> 현재 블록, 새로운 넥스트 블록 - *
 9. 스페이스바 기능				  - *
+
 */
