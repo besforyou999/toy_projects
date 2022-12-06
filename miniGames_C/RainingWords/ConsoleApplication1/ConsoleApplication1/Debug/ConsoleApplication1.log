@@ -1,0 +1,5 @@
+﻿  main.cpp
+D:\Coding\제발되라\ConsoleApplication1\ConsoleApplication1\main.cpp(48,31): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+D:\Coding\제발되라\ConsoleApplication1\ConsoleApplication1\main.cpp(117,31): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+D:\Coding\제발되라\ConsoleApplication1\ConsoleApplication1\main.cpp(141,27): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+  ConsoleApplication1.vcxproj -> D:\Coding\제발되라\ConsoleApplication1\Debug\ConsoleApplication1.exe
