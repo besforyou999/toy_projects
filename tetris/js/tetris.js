@@ -1,4 +1,5 @@
-import {BGM} from './BGM.js';
+import {BGM} from './components/BGM.js';
+import { Coordinate } from './components/Coordinate.js';
 
 const WIDTH = 18;
 const HEIGHT = 27;
@@ -11,7 +12,6 @@ const NEXT_BOX_WIDTH = 5;
 const NEXT_BOX_HEIGHT = 6;
 const NEXT_BLOCK_HEADER = "next-block-";
 const BLOCK_DROP_SPEED = 300;
-const BGM_LIST_LEN = 4;
 let   SCORE = 0;
 
 const create2DArray = (rows, columns) => {
@@ -34,34 +34,9 @@ const initialize_matrix = () => {
 	return block_occupied;
 }
 
-function resetBlockOccupied () {
-	return new Promise((resolve, reject) => {
-		setTimeout(() => {
-			for (let i = 0 ; i < HEIGHT ; i++) {
-				for (let j = 0 ; j < WIDTH ; j++) {
-					block_occupied[i][j] = false;
-				}
-			}
-		}, 300);
-	});
-}
-
-class Coordinate {
-	constructor(row, col) {
-		this.row = row;
-		this.col = col;
-	}
-
-	copy() {
-		const row = this.row;
-		const col = this.col;
-		const newCopy = [row, col];
-		return newCopy;
-	}
-}
-
 class Block {
-	constructor() {
+	constructor(UNSEENAREA_SIDE, ) {
+		this.UNSEENAREA_SIDE = UNSEENAREA_SIDE;
 		this.blockDir = 0;
 		this.block;
 		this.coloredBlock;
@@ -712,20 +687,6 @@ function dealWithKeyboard(event) {
 	}
 } 
 
-function resetMatrix() { 
-	return new Promise((resolve, reject) => {
-		setTimeout(() => {
-			for (let row =0; row < HEIGHT; row++) {
-				for(let col = 0; col < WIDTH ; col++) {
-					const d = document.getElementById(`${row}-${col}`);
-					d.style.backgroundColor = "white";
-				}
-			}
-			resolve();
-		}, 1000);
-	});
-}
-
 const rebuildGraph = () => {
 	for (let i = 0 ; i < HEIGHT; i++) {
 		for (let j = 0 ; j < WIDTH ; j++) {
@@ -977,7 +938,6 @@ const printCurrentBlockOnGraph = () => {
 		tmp.style.boxShadow = "0 -1px 0 #ccc, 1px 0 0 #ccc, -1px 0 0 #ccc";
 		block_occupied[row][col] = true;
 	});
-
 }
 
 const checkIfBlockMetTheBottom = () => {
@@ -1230,8 +1190,6 @@ const intervalTasks = function() {
 		rebuildGraph();
 		printNextBlock();
 		printCurrentBlockOnGraph();
-
-		
 	}
 	dropBlock();
 }
@@ -1262,7 +1220,6 @@ const addPlayBtn = () => {
 	});
 
 }
-
 
 const MusicPlayer = new BGM();
 document.addEventListener("keydown", dealWithKeyboard, false);
