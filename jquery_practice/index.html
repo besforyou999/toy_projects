@@ -10,12 +10,31 @@
     <h1>HTML 태그 선택자</h1>
     <p>이제부터 <span>제이쿼리</span>를 다 같이 공부해보죠!!</p>
     마우스로 글씨를 클릭해보세요
+    <h2 id="id1">id 선택자 테스트</h2>
+    <h2 class="jq">클래스 선택자 테스트1</h2>
+    <h2 class="jq">클래스 선택자 테스트2</h2>
+    <h2 class="jq">클래스 선택자 테스트3</h2>
     <script>
+        // getElementsByTagName() 메소드와 같은 동작을 함
         $(function() {
-            $("p").on("click", function() {
+            $("p").on("click", function() { 
                 $("span").css("fontSize", "28px");
             })
         })
+
+        // getElementsById 메소드와 같은 동작을 함
+        $(function() {
+            $("p").on("click", function() {
+                $("#id1").css("border", "2px solid black");
+            })
+        })
+        // getElementsByClassName 메소드와 같은 동작을 함.
+        $(function() {
+            $("p").on("click", function() {
+                $(".jq").css("backgroundColor", "lightgray"); // 클래스가 "jq"인 요소를 모두 선택함.
+            })
+        })
+
     </script>
 </body>
 </html>
