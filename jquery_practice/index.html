@@ -5,39 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jquery practice</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <style>
-      .container * { 
-        display: block;
-        border: 1px solid lightgray;
-        padding: 5px;
-        margin: 15px;
-      }
-    </style>
 </head>
 <body>
-  <h1>.parent() 메소드</h1>
-	<div class="container">
-		<div>div 요소
-			<ul>ul 요소
-				<li>li 요소</li>
-				<li>li 요소
-					<p>p 요소 (기준)
-						<span>span 요소</span>
-					</p>
-				</li>
-				<li>li 요소</li>
-			</ul>
-		</div>
-	</div>
-
-	<button>p 요소의 부모 요소</button>
-
+  <h1>.on() 메소드</h1>
+	<button>마우스를 버튼 위로 가져가거나 클릭해 보세요!</button>
+	<p id="text"></p>
+  
   <script>
     $(function() {
-      $("button").on("click", function() {
-        $("p").parent()                       // <p> 요소의 부모 요소를 선택함
-          .css({"border": "2px solid red"});  // 해당 요소의 CSS 스타일 변경
-      })
+      $("button").on({
+        mouseenter: function() {
+          $("#text").append("마우스가 버튼 위로 진입했어요!<br>");
+        },
+        click: function() {
+          $("#text").append("마우스가 버튼을 클릭했어요!<br>");
+        },
+        mouseleave: function() {
+          $("#text").append("마우스가 버튼 위에서 빠져나갔어요!<br>");
+        }
+      });
     });
   </script>
 </body>
