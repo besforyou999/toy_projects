@@ -7,34 +7,23 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 </head>
 <body>
-    <h1>HTML 태그 선택자</h1>
-    <p>이제부터 <span>제이쿼리</span>를 다 같이 공부해보죠!!</p>
-    마우스로 글씨를 클릭해보세요
-    <h2 id="id1">id 선택자 테스트</h2>
-    <h2 class="jq">클래스 선택자 테스트1</h2>
-    <h2 class="jq">클래스 선택자 테스트2</h2>
-    <h2 class="jq">클래스 선택자 테스트3</h2>
+    <h1> 선택한 요소 변수로 저장 </h1>
+    <ul>
+        <li>첫 번째 아이템이에요!</li>
+        <li>두 번째 아이템이에요!</li>
+        <li>세 번째 아이템이에요!</li>
+        <li>네 번째 아이템이에요!</li>
+        <li>다섯번째 아이템이에요!</li>
+    </ul>
+    <button>선택된 요소의 길이는?</button>
+    <p id="len"></p>
     <script>
-        // getElementsByTagName() 메소드와 같은 동작을 함
         $(function() {
-            $("p").on("click", function() { 
-                $("span").css("fontSize", "28px");
+            var items = $("li");
+            $("button").on("click", function() {
+                $("#len").text("저장된 리스트 길이는 " + items.length);
             })
         })
-
-        // getElementsById 메소드와 같은 동작을 함
-        $(function() {
-            $("p").on("click", function() {
-                $("#id1").css("border", "2px solid black");
-            })
-        })
-        // getElementsByClassName 메소드와 같은 동작을 함.
-        $(function() {
-            $("p").on("click", function() {
-                $(".jq").css("backgroundColor", "lightgray"); // 클래스가 "jq"인 요소를 모두 선택함.
-            })
-        })
-
     </script>
 </body>
 </html>
