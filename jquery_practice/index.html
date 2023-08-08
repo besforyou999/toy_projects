@@ -7,18 +7,35 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 </head>
 <body>
-    <h1>.html() 메소드 테스트 페이지</h1>
-    <p>아래의 버튼을 누르면 다음 단락에 새로운 텍스트를 설정할 수 있어요</p>
-    <button>새로운 텍스트!</button>
-    <p id="text"></p>
-
+    <h1>메소드 체이닝</h1>
+    <ul id="list">
+        <li>첫 번째 아이템이에요!</li>
+        <li>두 번째 아이템이에요!</li>
+        <li>세 번째 아이템이에요!</li>
+    </ul>
+    <button>텍스트 변경</button>
+    <button id="btn2">다중 변경</button>
     <script>
+        /*
+        *   메소드 체이닝. 여러 개의 메소드가 연속으로 호출되는 것을 말함.
+        *   eq 메소드는 주어진 인자에 해당하는 인덱스의 요소를 선택하는 메소드
+        */
         $(function() {
             $("button").on("click", function() {
-                var newText = $("h1").html();   // h1 요소의 텍스트를 읽어오는 getter 메서드. 인수 없이 호출하면 getter 메소드로 작동한다.
-                $("#text").html(newText);       // id가 text인 p 요소에 값을 설정하는 setter 메서드. 인수를 제공하여 호출하면 setter 메소드로 작동한다.
+                $("#list").find("li").eq(1).html("두 번째 아이템을 선택했어요!!");  // 메소드 체이닝. 여러 개의 메소드가 연속으로 호출되는 것을 말함.
             });
         });
+
+        /*
+        *   end() 메소드를 사용하면 바로 이전에 선택했던 요소의 집합을 다시 선택할 수 있습니다.
+        */
+        $(function() {
+            $("#id").on("click", function() {
+                $("#list").find("li").eq(1).html("두 번째 아이템을 선택했어요!!").end().eq(2).html("세 번째 아이템을 선택했어요!!")
+            })
+        })
+        
+
     </script>
 </body>
 </html>
