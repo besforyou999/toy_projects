@@ -5,29 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jquery practice</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <style>
+      .container * { 
+        display: block;
+        border: 1px solid lightgray;
+        padding: 5px;
+        margin: 15px;
+      }
+    </style>
 </head>
 <body>
-  <h1>.append() 메소드</h1>
-  <button id="append">아이템 추가 ( append )</button>
-  <button id="prepend">아이템 추가 ( prepend )</button>
-	<ul id="list">
-		<li>첫 번째 아이템이에요!</li>
-		<li>두 번째 아이템이에요!</li>
-		<li>세 번째 아이템이에요!</li>
-	</ul>
+  <h1>.parent() 메소드</h1>
+	<div class="container">
+		<div>div 요소
+			<ul>ul 요소
+				<li>li 요소</li>
+				<li>li 요소
+					<p>p 요소 (기준)
+						<span>span 요소</span>
+					</p>
+				</li>
+				<li>li 요소</li>
+			</ul>
+		</div>
+	</div>
+
+	<button>p 요소의 부모 요소</button>
 
   <script>
     $(function() {
-
-      $("#append").on("click", function() {
-        $("#list").append("<li>새로 추가된 아이템이에요</li>"); // append : 선택한 요소 '마지막'에 새로운 요소나 콘텐츠 추가
+      $("button").on("click", function() {
+        $("p").parent()                       // <p> 요소의 부모 요소를 선택함
+          .css({"border": "2px solid red"});  // 해당 요소의 CSS 스타일 변경
       })
-
-      $("#prepend").on("click", function() {
-        $("#list").prepend("<li>새로 추가된 아이템이ㅔ요</li>")
-      })
-      
-    })
+    });
   </script>
 </body>
 </html>
