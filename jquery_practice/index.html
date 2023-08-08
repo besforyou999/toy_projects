@@ -7,30 +7,27 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 </head>
 <body>
-    <h1>.width() 메소드와 .height() 메소드</h1>
-	<p>아래의 버튼을 누르면 다음 div 요소의 크기를 읽어오거나 설정할 수 있어요!!</p>
-	<button id="getter">크기 읽어오기!</button>
-	<button id="setter">크기 줄이기!</button><br><br>
-	<div id="box" style="width: 400px; height: 200px; background-color: yellow"></div>
-	<p id="text"></p>
+  <h1>.append() 메소드</h1>
+  <button id="append">아이템 추가 ( append )</button>
+  <button id="prepend">아이템 추가 ( prepend )</button>
+	<ul id="list">
+		<li>첫 번째 아이템이에요!</li>
+		<li>두 번째 아이템이에요!</li>
+		<li>세 번째 아이템이에요!</li>
+	</ul>
 
-    <script>
-        $(function() {
-            $("#getter").on("click", function() {
-                var size = "너비는 " + $("#box").width() + "px이고, 높이는 " + $("#box").height() + "px입니다.<br>";
-                $("#text").html(size);
-            });
+  <script>
+    $(function() {
 
-            $("#setter").on("click", function() {
-                var w = $("#box").width();
-                var h = $("#box").height();
-                $("#box").width(w / 2).height(h / 2);
+      $("#append").on("click", function() {
+        $("#list").append("<li>새로 추가된 아이템이에요</li>"); // append : 선택한 요소 '마지막'에 새로운 요소나 콘텐츠 추가
+      })
 
-                var size = "너비는 " + $("#box").width() + "px이고, 높이는 " + $("#box").height() + "px입니다.<br>";
-                $("#text").html(size);
-            })
-        })
-
-    </script>
+      $("#prepend").on("click", function() {
+        $("#list").prepend("<li>새로 추가된 아이템이ㅔ요</li>")
+      })
+      
+    })
+  </script>
 </body>
 </html>
