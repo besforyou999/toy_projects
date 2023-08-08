@@ -7,21 +7,21 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 </head>
 <body>
-    <h1> 선택한 요소 변수로 저장 </h1>
-    <ul>
-        <li>첫 번째 아이템이에요!</li>
-        <li><span>두 번째 아이템이에요!</span></li>
-        <li>세 번째 아이템이에요!</li>
-    </ul>
-    <button>선택된 요소의 길이는?</button>
-    <p id="len"></p>
+    <h1>Form 요소의 선택</h1>
+
+    <form>
+        <input type="checkbox" name="lecture" value="html"> <span>HTML</span> <br>
+        <input type="checkbox" name="lecture" value="css"> <span>CSS</span> <br>
+        <input type="checkbox" name="lecture" value="javascript"> <span>자바스크립트</span> <br>
+        <input type="checkbox" name="lecture" value="jquery" checked> <span>제이쿼리</span> <br>
+    </form>
+    <button>필터링</button>
     <script>
         $(function() {
             $("button").on("click", function() {
-                $("li:has(span)").text("span 요소를 가지고 있음");
-            })
-        })
-        // 단, 문서에 새로운 요소가 추가, 삭제되어도 변수에 저장된 내용은 갱신되지 않음
+                $(":checked").next().text("체크되어 있는 요소는 이 요소입니다.");
+            });
+        });
     </script>
 </body>
 </html>
