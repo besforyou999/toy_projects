@@ -19,11 +19,12 @@
     <p id="len"></p>
     <script>
         $(function() {
-            var items = $("li");
+            var items = $("li");    // <li> 요소를 모두 선택하여 변수에 저장
             $("button").on("click", function() {
                 $("#len").text("저장된 리스트 길이는 " + items.length);
             })
         })
+        // 단, 문서에 새로운 요소가 추가, 삭제되어도 변수에 저장된 내용은 갱신되지 않음
     </script>
 </body>
 </html>
