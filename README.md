@@ -10,6 +10,13 @@ C 언어로 개발한 미니 게임들
 
 HTML, CSS, JavaScript로 개발한 테트리스
 
-index.html을 브라우저에 로드하여 실행 가능합니다
+***
+### overwatch_hero_selector
+
+간단한 오버워치 영웅 선택 앱
+
+Language : HTML, CSS, JavaScript
+
+
 
 
