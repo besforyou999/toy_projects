@@ -1,36 +1,25 @@
 // Promise
 
-const a = () => {
+const getMovies = movieName => {
   return new Promise(resolve => {
-    setTimeout(() => {
-      console.log(1)
-      resolve()
-    }, 1000)
+    fetch(`https://www.helloworld/s=${movieName}`)
+      .then(res => res.json())
+      .then(res => {
+        console.log(res)
+        resolve()
+      })
   })
 }
 
-const b = () => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      console.log(2)
-      resolve()
-    }, 1000)
+getMovies('frozen')
+  .then(() => {
+    console.log('겨울왕국!')
+    return getMovies('avengers')
   })
-}
-
-const c = () => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      console.log(3)
-      resolve()
-    }, 1000)
+  .then(() => {
+    console.log('어벤져스!')
+    return getMovies('avatar')
   })
-}
-
-const d = () => console.log(4);
-
-a()
-  .then(b)
-  .then(c)
-  .then(d)
-  .then(() => console.log('done'));
+  .then(() => {
+    console.log('아바타!');
+  })
