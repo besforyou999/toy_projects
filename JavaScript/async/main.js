@@ -1,36 +1,18 @@
-// Promise
+// Resolve, Reject 그리고 에러 핸들링
 
-const getMovies = movieName => {
-  return new Promise(resolve => {
-    fetch(`https://www.helloworld/s=${movieName}`)
-      .then(res => res.json())
-      .then(res => {
-        console.log(res)
-        resolve()
-      })
+const delayAdd = index => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (index > 10) {
+        reject(`${index}는 10보다 클 수 없습니다.`)
+        return
+      }
+      console.log(index);
+      resolve(index + 1);
+    }, 1000)
   })
 }
 
-// getMovies('frozen')
-//   .then(() => {
-//     console.log('겨울왕국!')
-//     return getMovies('avengers')
-//   })
-//   .then(() => {
-//     console.log('어벤져스!')
-//     return getMovies('avatar')
-//   })
-//   .then(() => {
-//     console.log('아바타!');
-//   })
-
-const wrap = async() => {
-  await getMovies('frozen')
-  console.log('겨울왕국')
-  await getMovies('avengers')
-  console.log('어벤져스!')
-  await getMovies('avatar')
-  console.log('아바타!')
-}
-
-wrap();
+delayAdd(2)
+  .then(res => console.log(res))
+  .catch(err => console.log(err))
