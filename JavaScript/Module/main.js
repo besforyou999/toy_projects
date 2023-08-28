@@ -1,5 +1,3 @@
-import {str as xyz, arr, hello as h} from './module.js';
+import * as all from './module.js';
 
-console.log(xyz);
-console.log(arr);
-console.log(h);
+console.log(all);
