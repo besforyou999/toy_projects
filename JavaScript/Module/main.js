@@ -1,3 +1,11 @@
-import * as all from './module.js';
+setTimeout(()=> {
+  import('./module.js').then(abc => {
+    console.log(abc);
+  })
+}, 1000);
 
-console.log(all);
+
+setTimeout(async ()=> {
+  const abc = await import('./module.js');
+  console.log(abc);
+}, 2000);
