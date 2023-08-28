@@ -16,3 +16,17 @@ const delayAdd = index => {
 delayAdd(2)
   .then(res => console.log(res))
   .catch(err => console.log(err))
+  .finally(() => console.log('Done'))
+
+const wrap = async() => {
+  try {
+    const res = await delayAdd(2);
+    console.log(res);
+  } catch (err) {
+    console.log(err)
+  } finally {
+    console.log('Done!');
+  }
+}
+
+wrap();
