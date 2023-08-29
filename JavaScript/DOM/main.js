@@ -1,28 +1,18 @@
-// Node vs Element
+// document.getElementById()
 
-// 노드 (Node): HTML 요소, 텍스트, 주석 등 모든 것을 의미
-// 요소 (Element) : HTML 요소를 의미
-
-const parent = document.querySelector('.parent');
-
-// 부모 요소의 모든 자식 노드 확인
-console.log(parent.childNodes);
-// 텍스트를 포함한 div 요소들 모두 출력된다.
-
-// 부모 요소의 모든 자식 요소 확인
-console.log(parent.children);
-// div 요소만 출력된다.
+// HTML id 속성 값으로 검색한 요소 반환
+// 여러 요소가 검색되면, 가장 먼저 찾은 요소만 반환
+// 검색 결과가 없으면, 'null'을 반환
+const el = document.getElementById('child123');
+console.log(el);
 
 
-class N {}
-class E extends N {}
 
-console.dir(E)      // E
-console.dir(N)      // N
-console.dir(E.__proto__) // N
+// document.querySelectorAll()
 
-console.dir(Element)  // Element()
-console.dir(Node)     // Node()
-console.dir(Element.__proto__)  // Node()
+// 'CSS 선택자'로 검색한 모든 요소를 `NodeList`로 반환
+// `NodeList` 객체는 `.forEach()`를 사용할 수 있습니다.
 
-// Node가 Element의 상위 개념
+const nodeList = document.querySelectorAll('.child');
+console.log(nodeList);
+nodeList.forEach(el => console.log(el.textContent));
