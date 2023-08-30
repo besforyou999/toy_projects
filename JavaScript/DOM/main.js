@@ -1,15 +1,16 @@
-// .removeEventListener()
+// 기본 동작 방지
+// event.preventDefault()
 
-// 등록했던 이벤트 핸들러 제거
-
+// 마우스 휠의 스크롤 동작 방지!
 const parentEl = document.querySelector('.parent');
-const childEl = document.querySelector('.child');
+parentEl.addEventListener('wheel', event => {
+  event.preventDefault();
+  console.log('Wheel!');
+})
 
-const handler = () => {
-  console.log('Parent!');
-}
-
-parentEl.addEventListener('click', handler);
-childEl.addEventListener('click', () => {
-  parentEl.removeEventListener('click', handler);
+// <a> 태그에서 페이지 이동 방지!
+const anchorEl = document.querySelector('a')
+anchorEl.addEventListener('click', event => {
+  event.preventDefault();
+  console.log('Click');
 })
