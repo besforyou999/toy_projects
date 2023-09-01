@@ -1,16 +1,8 @@
 // 정규표현식 (RegExp, Regular Expression)
 
-// - 문자 검색 (Search)
-// - 문자 대체 (Replace)
-// - 문자 추출 (Extract)
-
-// 생성자
-// new RegExp('표현', '옵션')
-// new RegExp('[a-z]', 'gi')
-
-// 리터럴
-// /표현/옵션
-// /[a-z]/gi
+// 정규식.test(문자열) - 일치 여부 반환
+// 문자열.match(정규식) - 일치하는 문자의 배열 반환
+// 문자열.replace(정규식, 대체문자) - 일치하는 문자를 대체
 
 const str = `
 010-3127-7629
@@ -24,10 +16,8 @@ http://localhost:1234
 abbcccddddeeeee
 `
 
-const regexp= new RegExp('the', 'gi');  // ['the', 'The', 'the']
-console.log(str.match(regexp))
+const regexp = /fox/gi
 
-const regexpLiteral = /the/gi
-console.log(str.match(regexpLiteral));
-
-console.log(str.match(/the/gi))
+console.log(regexp.test(str));    // 문자열에 'fox'가 있는지 탐색한다.
+console.log(str.match(regexp));   // ['fox']
+console.log(str.replace(regexp, 'cat'));  // str에서 'fox'가 'cat'으로 변경됨
